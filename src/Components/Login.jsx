@@ -26,8 +26,8 @@ const Login = () => {
 
   return (
     <div
-      className="container-fluid d-flex align-items-center justify-content-center vh-100"
-      style={{ backgroundColor: "#f4f7fb" }}
+      className="d-flex align-items-center justify-content-center vh-100 w-100"
+      style={{ backgroundColor: "#f4f7fb", minHeight: "100vh" }}
     >
       <div
         className="card shadow p-4"
