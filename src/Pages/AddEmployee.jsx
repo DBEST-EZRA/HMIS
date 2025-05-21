@@ -10,6 +10,9 @@ import {
   doc,
 } from "firebase/firestore";
 
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+
 const roles = [
   "lab",
   "clinical officer",
@@ -203,6 +206,43 @@ const AddEmployee = () => {
     }
   };
 
+  // PDF download handler
+  const downloadPdf = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text("Employees", 14, 22);
+    const tableColumn = [
+      "Name",
+      "Email",
+      "Role",
+      "Qualification",
+      "Specialization",
+      "Salary",
+    ];
+    const tableRows = [];
+
+    employees.forEach((emp) => {
+      const empData = [
+        emp.name || "-",
+        emp.email || "-",
+        emp.role || "-",
+        emp.qualification || "-",
+        emp.specialization || "-",
+        emp.salary ? emp.salary.toString() : "-",
+      ];
+      tableRows.push(empData);
+    });
+
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 30,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [136, 194, 68] }, // lime color #88C244
+    });
+    doc.save("employees.pdf");
+  };
+
   return (
     <div
       style={{
@@ -224,6 +264,7 @@ const AddEmployee = () => {
           borderRadius: 5,
           border: "none",
           cursor: "pointer",
+          marginRight: 15,
         }}
         aria-expanded={formOpen}
         aria-controls="employee-form"
@@ -233,6 +274,24 @@ const AddEmployee = () => {
           : editingId
           ? "Edit Employee"
           : "Add Employee"}
+      </button>
+
+      {/* Download PDF button */}
+      <button
+        onClick={downloadPdf}
+        style={{
+          marginBottom: 15,
+          backgroundColor: "#3C51A1",
+          color: "white",
+          padding: "10px 20px",
+          fontSize: 16,
+          borderRadius: 5,
+          border: "none",
+          cursor: "pointer",
+        }}
+        aria-label="Download employees table as PDF"
+      >
+        Download PDF
       </button>
 
       {/* Collapsible Form */}

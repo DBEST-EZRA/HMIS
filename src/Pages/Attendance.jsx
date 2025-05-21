@@ -17,7 +17,7 @@ const clinicalOfficers = [
   "David Brown",
 ]; // Example clinical officers — you can fetch dynamically if you want
 
-const PatientDetails = () => {
+const Attendance = () => {
   const [patients, setPatients] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredPatients, setFilteredPatients] = useState([]);
@@ -633,4 +633,4 @@ const PatientDetails = () => {
   );
 };
 
-export default PatientDetails;
+export default Attendance;
