@@ -77,6 +77,7 @@ const AddEmployee = () => {
   const [editingId, setEditingId] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
 
   useEffect(() => {
     fetchEmployees();
@@ -134,6 +135,7 @@ const AddEmployee = () => {
       setShowSuccessModal(true);
       resetForm();
       fetchEmployees();
+      setFormOpen(false); // auto close form after adding
     } catch (error) {
       alert("Error adding employee: " + error.message);
       console.error(error);
@@ -157,6 +159,7 @@ const AddEmployee = () => {
       setShowSuccessModal(true);
       resetForm();
       fetchEmployees();
+      setFormOpen(false); // auto close form after updating
     } catch (error) {
       alert("Error updating employee: " + error.message);
       console.error(error);
@@ -188,6 +191,7 @@ const AddEmployee = () => {
       specialization: employee.specialization,
       salary: employee.salary,
     });
+    setFormOpen(true);
   };
 
   const handleSubmit = (e) => {
@@ -208,120 +212,156 @@ const AddEmployee = () => {
         fontFamily: "Arial",
       }}
     >
-      <h2 style={{ color: "#3C51A1" }}>
-        {editingId ? "Edit Employee" : "Add Employee"}
-      </h2>
-
-      <form
-        onSubmit={handleSubmit}
+      {/* Toggle button */}
+      <button
+        onClick={() => setFormOpen((open) => !open)}
         style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 15,
-          marginBottom: 30,
+          marginBottom: 15,
+          backgroundColor: "#88C244",
+          color: "white",
+          padding: "10px 20px",
+          fontSize: 16,
+          borderRadius: 5,
+          border: "none",
+          cursor: "pointer",
+        }}
+        aria-expanded={formOpen}
+        aria-controls="employee-form"
+      >
+        {formOpen
+          ? "Hide Employee Form"
+          : editingId
+          ? "Edit Employee"
+          : "Add Employee"}
+      </button>
+
+      {/* Collapsible Form */}
+      <div
+        id="employee-form"
+        style={{
+          maxHeight: formOpen ? "1000px" : "0",
+          overflow: "hidden",
+          transition: "max-height 0.4s ease",
+          marginBottom: formOpen ? 30 : 0,
         }}
       >
-        <input
-          required
-          type="text"
-          name="name"
-          placeholder="Employee Name"
-          value={form.name}
-          onChange={handleChange}
-          style={{ padding: 8, fontSize: 16, gridColumn: "span 2" }}
-        />
-        <input
-          required
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-          style={{ padding: 8, fontSize: 16 }}
-          disabled={!!editingId}
-        />
-        <select
-          name="role"
-          value={form.role}
-          onChange={handleChange}
-          style={{ padding: 8, fontSize: 16 }}
-          required
-        >
-          {roles.map((r) => (
-            <option key={r} value={r}>
-              {r.charAt(0).toUpperCase() + r.slice(1)}
-            </option>
-          ))}
-        </select>
-        <input
-          type="text"
-          name="qualification"
-          placeholder="Qualification"
-          value={form.qualification}
-          onChange={handleChange}
-          style={{ padding: 8, fontSize: 16 }}
-        />
-        <input
-          type="text"
-          name="specialization"
-          placeholder="Specialization"
-          value={form.specialization}
-          onChange={handleChange}
-          style={{ padding: 8, fontSize: 16 }}
-        />
-        <input
-          type="number"
-          name="salary"
-          placeholder="Salary"
-          value={form.salary}
-          onChange={handleChange}
-          style={{ padding: 8, fontSize: 16 }}
-          min={0}
-        />
+        <h2 style={{ color: "#3C51A1" }}>
+          {editingId ? "Edit Employee" : "Add Employee"}
+        </h2>
 
-        <button
-          type="submit"
-          disabled={loading}
+        <form
+          onSubmit={handleSubmit}
           style={{
-            gridColumn: "span 2",
-            backgroundColor: "#88C244",
-            color: "white",
-            padding: 12,
-            fontSize: 18,
-            border: "none",
-            cursor: "pointer",
-            borderRadius: 5,
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 15,
           }}
         >
-          {editingId
-            ? loading
-              ? "Updating..."
-              : "Update Employee"
-            : loading
-            ? "Adding..."
-            : "Add Employee"}
-        </button>
-        {editingId && (
+          <input
+            required
+            type="text"
+            name="name"
+            placeholder="Employee Name"
+            value={form.name}
+            onChange={handleChange}
+            style={{ padding: 8, fontSize: 16, gridColumn: "span 2" }}
+          />
+          <input
+            required
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={form.email}
+            onChange={handleChange}
+            style={{ padding: 8, fontSize: 16 }}
+            disabled={!!editingId}
+          />
+          <select
+            name="role"
+            value={form.role}
+            onChange={handleChange}
+            style={{ padding: 8, fontSize: 16 }}
+            required
+          >
+            {roles.map((r) => (
+              <option key={r} value={r}>
+                {r.charAt(0).toUpperCase() + r.slice(1)}
+              </option>
+            ))}
+          </select>
+          <input
+            type="text"
+            name="qualification"
+            placeholder="Qualification"
+            value={form.qualification}
+            onChange={handleChange}
+            style={{ padding: 8, fontSize: 16 }}
+          />
+          <input
+            type="text"
+            name="specialization"
+            placeholder="Specialization"
+            value={form.specialization}
+            onChange={handleChange}
+            style={{ padding: 8, fontSize: 16 }}
+          />
+          <input
+            type="number"
+            name="salary"
+            placeholder="Salary"
+            value={form.salary}
+            onChange={handleChange}
+            style={{ padding: 8, fontSize: 16 }}
+            min={0}
+          />
+
           <button
-            type="button"
-            onClick={resetForm}
+            type="submit"
             disabled={loading}
             style={{
               gridColumn: "span 2",
-              backgroundColor: "#3C51A1",
+              backgroundColor: "#88C244",
               color: "white",
               padding: 12,
               fontSize: 18,
               border: "none",
               cursor: "pointer",
               borderRadius: 5,
-              marginTop: 5,
             }}
           >
-            Cancel Edit
+            {editingId
+              ? loading
+                ? "Updating..."
+                : "Update Employee"
+              : loading
+              ? "Adding..."
+              : "Add Employee"}
           </button>
-        )}
-      </form>
+          {editingId && (
+            <button
+              type="button"
+              onClick={() => {
+                resetForm();
+                setFormOpen(false);
+              }}
+              disabled={loading}
+              style={{
+                gridColumn: "span 2",
+                backgroundColor: "#3C51A1",
+                color: "white",
+                padding: 12,
+                fontSize: 18,
+                border: "none",
+                cursor: "pointer",
+                borderRadius: 5,
+                marginTop: 5,
+              }}
+            >
+              Cancel Edit
+            </button>
+          )}
+        </form>
+      </div>
 
       {/* Employees Table */}
       <table
