@@ -5,7 +5,10 @@ import Clinician from "../Pages/Clinician";
 import Reception from "../Pages/Reception";
 import Admin from "../Pages/Admin";
 import Pharmacy from "../Pages/Pharmacy";
-import logo from "../assets/logo.jpg"; // <-- Replace with your actual logo path
+import Xray from "../Pages/Xray";
+import Accounts from "../Pages/Accounts";
+import Emergency from "../Pages/Emergency";
+import logo from "../assets/logo.jpg";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -23,6 +26,9 @@ const Login = () => {
   if (isLoggedIn && role === "pharmacy") return <Pharmacy />;
   if (isLoggedIn && role === "reception") return <Reception />;
   if (isLoggedIn && role === "admin") return <Admin />;
+  if (isLoggedIn && role === "xray") return <Xray />;
+  if (isLoggedIn && role === "accounts") return <Accounts />;
+  if (isLoggedIn && role === "emergency") return <Emergency />;
 
   return (
     <div
@@ -90,6 +96,9 @@ const Login = () => {
               <option value="pharmacy">Pharmacy</option>
               <option value="reception">Reception</option>
               <option value="admin">Admin</option>
+              <option value="xray">Physiotherapy</option>
+              <option value="accounts">Accounts</option>
+              <option value="emergency">Emergency</option>
             </select>
           </div>
 
