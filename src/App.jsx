@@ -1,13 +1,25 @@
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+
 import Login from "./Components/Login";
+import AddEmployee from "./Pages/AddEmployee";
+
 import "bootstrap/dist/css/bootstrap.min.css";
 
 function App() {
   return (
-    <>
-      <div>
-        <Login />
-      </div>
-    </>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/add-employee" element={<AddEmployee />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Router>
   );
 }
 

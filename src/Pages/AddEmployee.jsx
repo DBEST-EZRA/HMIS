@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { auth, db } from "..Configuration/Config";
+import { auth, db } from "../Configuration/Config";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import {
   collection,

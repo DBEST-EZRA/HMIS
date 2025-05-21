@@ -416,7 +416,7 @@ const Admin = () => {
         {/* Table */}
         <div className="table-responsive">
           <table className="table table-bordered table-hover align-middle">
-            <thead style={{ backgroundColor: "#3C51A1", color: "#fff" }}>
+            <thead style={{ backgroundColor: "#88C245", color: "#fff" }}>
               {renderTableHeaders()}
             </thead>
             <tbody>
