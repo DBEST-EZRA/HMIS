@@ -25,7 +25,7 @@ import Departments from "./Departments";
 import Shifts from "./Shifts";
 import BloodBank from "./BloodBank";
 import BillList from "./BillList";
-import Salary from "./Salary";
+import Attendance from "./Attendance";
 
 const tabComponents = {
   employeeDetails: AddEmployee,
@@ -38,7 +38,7 @@ const tabComponents = {
   shifts: Shifts,
   bloodBank: BloodBank,
   billList: BillList,
-  salary: Salary,
+  attendance: Attendance,
 };
 
 const tabsConfig = [
