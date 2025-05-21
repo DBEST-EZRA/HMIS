@@ -8,6 +8,7 @@ import Pharmacy from "../Pages/Pharmacy";
 import Xray from "../Pages/Xray";
 import Accounts from "../Pages/Accounts";
 import Emergency from "../Pages/Emergency";
+import Nurse from "../Pages/Nurse";
 import logo from "../assets/logo.jpg";
 
 const Login = () => {
@@ -29,6 +30,7 @@ const Login = () => {
   if (isLoggedIn && role === "xray") return <Xray />;
   if (isLoggedIn && role === "accounts") return <Accounts />;
   if (isLoggedIn && role === "emergency") return <Emergency />;
+  if (isLoggedIn && role === "nurse") return <Nurse />;
 
   return (
     <div
@@ -99,6 +101,7 @@ const Login = () => {
               <option value="xray">Physiotherapy</option>
               <option value="accounts">Accounts</option>
               <option value="emergency">Emergency</option>
+              <option value="nurse">Nurse</option>
             </select>
           </div>
 
