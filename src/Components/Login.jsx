@@ -10,6 +10,7 @@ import Accounts from "../Pages/Accounts";
 import Emergency from "../Pages/Emergency";
 import Nurse from "../Pages/Nurse";
 import logo from "../assets/logo.jpg";
+import Doctor from "../Pages/Doctor";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -31,6 +32,7 @@ const Login = () => {
   if (isLoggedIn && role === "accounts") return <Accounts />;
   if (isLoggedIn && role === "emergency") return <Emergency />;
   if (isLoggedIn && role === "nurse") return <Nurse />;
+  if (isLoggedIn && role === "doctor") return <Doctor />;
 
   return (
     <div
@@ -102,6 +104,7 @@ const Login = () => {
               <option value="accounts">Accounts</option>
               <option value="emergency">Emergency</option>
               <option value="nurse">Nurse</option>
+              <option value="doctor">Doctor</option>
             </select>
           </div>
 

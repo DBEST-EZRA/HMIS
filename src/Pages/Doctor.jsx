@@ -2,18 +2,18 @@ import React, { useState } from "react";
 import { FaUserCheck, FaHistory, FaCalendarAlt } from "react-icons/fa";
 import logo from "../assets/logo.jpg";
 import "bootstrap/dist/css/bootstrap.min.css";
-import OutPatient1 from "../MorePages/OutPatient1";
+import OutPatient2 from "../MorePages/OutPatient2";
 import Appointments from "./Appointments";
 
-const Nurse = () => {
+const Doctor = () => {
   const [activeTab, setActiveTab] = useState("assignedPatients");
 
   const renderComponent = () => {
     switch (activeTab) {
       case "assignedPatients":
-        return <OutPatient1 />;
+        return <OutPatient2 />;
       case "pastPatients":
-        return <OutPatient1 />;
+        return <OutPatient2 />;
       case "appointments":
         return <Appointments />;
       default:
@@ -91,7 +91,7 @@ const Nurse = () => {
         className="flex-grow-1 p-4 overflow-auto"
         style={{ height: "100vh" }}
       >
-        <h4>Hello, Nurse</h4>
+        <h4>Hello, Doctor</h4>
         <div className="d-flex flex-wrap gap-3 mb-4">
           <div
             className="card text-white"
@@ -134,4 +134,4 @@ const Nurse = () => {
   );
 };
 
-export default Nurse;
+export default Doctor;
