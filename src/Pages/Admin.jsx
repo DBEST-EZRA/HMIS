@@ -16,7 +16,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import logo from "../assets/logo.jpg";
 
 import AddEmployee from "./AddEmployee";
-import OutPatient from "../MorePages/OutPatient";
+import OutPatient3 from "../MorePages/Outpatient3";
 import PharmacyInventory from "./PharmacyInventory";
 import Appointments from "./Appointments";
 import BirthRecords from "./BirthRecords";
@@ -30,7 +30,7 @@ import NewSale from "../MorePages/NewSale";
 
 const tabComponents = {
   employeeDetails: AddEmployee,
-  patientDetails: OutPatient,
+  patientDetails: OutPatient3,
   pharmacyInventory: PharmacyInventory,
   pharmacySales: NewSale,
   appointments: Appointments,
