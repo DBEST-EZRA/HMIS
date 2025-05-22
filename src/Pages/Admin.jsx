@@ -26,11 +26,13 @@ import Shifts from "./Shifts";
 import BloodBank from "./BloodBank";
 import BillList from "./BillList";
 import Attendance from "./Attendance";
+import NewSale from "../MorePages/NewSale";
 
 const tabComponents = {
   employeeDetails: AddEmployee,
   patientDetails: PatientDetails,
   pharmacyInventory: PharmacyInventory,
+  pharmacySales: NewSale,
   appointments: Appointments,
   birthRecords: BirthRecords,
   wardRecords: WardRecords,
@@ -48,6 +50,11 @@ const tabsConfig = [
     key: "pharmacyInventory",
     label: "Pharmacy Inventory",
     icon: <FaCapsules />,
+  },
+  {
+    key: "pharmacySales",
+    label: "Pharmacy Sales",
+    icon: <FaFileInvoiceDollar />,
   },
   { key: "appointments", label: "Appointments", icon: <FaCalendarAlt /> },
   { key: "birthRecords", label: "Birth Records", icon: <FaBaby /> },
