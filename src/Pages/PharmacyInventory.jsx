@@ -110,8 +110,8 @@ const PharmacyInventory = () => {
 
       <div className="table-responsive">
         <table className="table table-bordered">
-          <thead style={{ backgroundColor: "#3C51A1", color: "white" }}>
-            <tr>
+          <thead style={{ backgroundColor: "#88C244", color: "white" }}>
+            <tr style={{ backgroundColor: "#88C244", color: "white" }}>
               <th>Medicine Name</th>
               <th>Batch No</th>
               <th>Category</th>
