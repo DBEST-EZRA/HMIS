@@ -3,7 +3,7 @@ import { FaUserCheck, FaHistory, FaCalendarAlt } from "react-icons/fa";
 import logo from "../assets/logo.jpg";
 import "bootstrap/dist/css/bootstrap.min.css";
 import OutPatient from "../MorePages/OutPatient";
-import Appointment from "./Appointment";
+import Appointments from "./Appointments";
 
 const Clinician = () => {
   const [activeTab, setActiveTab] = useState("assignedPatients");
@@ -15,7 +15,7 @@ const Clinician = () => {
       case "pastPatients":
         return <OutPatient />;
       case "appointments":
-        return <Appointment />;
+        return <Appointments />;
       default:
         return null;
     }

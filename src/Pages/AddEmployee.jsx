@@ -24,6 +24,7 @@ const roles = [
   "security",
   "cleaner",
   "physiotherapist",
+  "admin",
   "other",
 ];
 
