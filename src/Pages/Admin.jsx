@@ -56,7 +56,7 @@ const tabsConfig = [
   { key: "shifts", label: "Shifts", icon: <FaClock /> },
   { key: "bloodBank", label: "Blood Bank", icon: <FaTint /> },
   { key: "billList", label: "Bill List", icon: <FaFileInvoiceDollar /> },
-  { key: "salary", label: "Salary", icon: <FaMoneyCheckAlt /> },
+  { key: "attendance", label: "Attendance", icon: <FaMoneyCheckAlt /> },
 ];
 
 const Admin = () => {

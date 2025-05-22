@@ -8,624 +8,286 @@ import {
   deleteDoc,
   doc,
 } from "firebase/firestore";
-import { FaEdit, FaTrash, FaSearch } from "react-icons/fa";
+import { FaEdit, FaTrash } from "react-icons/fa";
+import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
 
-const clinicalOfficers = [
-  "Alice Johnson",
-  "Bob Smith",
-  "Carol Williams",
-  "David Brown",
-]; // Example clinical officers — you can fetch dynamically if you want
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const WardRecords = () => {
-  const [patients, setPatients] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filteredPatients, setFilteredPatients] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  // Modal states
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState("add"); // add or edit
-  const [modalLoading, setModalLoading] = useState(false);
-
-  const [successModalOpen, setSuccessModalOpen] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-
-  const [errorModalOpen, setErrorModalOpen] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-
-  // Form state for add/edit
+  const [records, setRecords] = useState([]);
   const [form, setForm] = useState({
-    fullName: "",
-    idNumber: "",
-    phone: "",
-    assignee: clinicalOfficers[0],
+    patient: "",
+    reason: "",
+    admissionDate: "",
+    dischargeDate: "",
+    charges: "",
   });
   const [editingId, setEditingId] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [filterDate, setFilterDate] = useState("");
 
   useEffect(() => {
-    fetchPatients();
+    fetchRecords();
   }, []);
 
-  useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setFilteredPatients(patients);
+  const fetchRecords = async () => {
+    const colRef = collection(db, "ward");
+    const snapshot = await getDocs(colRef);
+    const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    setRecords(data);
+  };
+
+  const openModal = (record = null) => {
+    if (record) {
+      setForm(record);
+      setEditingId(record.id);
     } else {
-      const filtered = patients.filter((p) =>
-        Object.values(p)
-          .join(" ")
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())
-      );
-      setFilteredPatients(filtered);
+      setForm({
+        patient: "",
+        reason: "",
+        admissionDate: "",
+        dischargeDate: "",
+        charges: "",
+      });
+      setEditingId(null);
     }
-  }, [searchTerm, patients]);
-
-  const fetchPatients = async () => {
-    setLoading(true);
-    try {
-      const colRef = collection(db, "patients");
-      const snapshot = await getDocs(colRef);
-      const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setPatients(list);
-      setFilteredPatients(list);
-    } catch (error) {
-      showError("Failed to fetch patients: " + error.message);
-    }
-    setLoading(false);
-  };
-
-  const showError = (msg) => {
-    setErrorMessage(msg);
-    setErrorModalOpen(true);
-  };
-
-  const showSuccess = (msg) => {
-    setSuccessMessage(msg);
-    setSuccessModalOpen(true);
-  };
-
-  const openAddModal = () => {
-    setModalMode("add");
-    setForm({
-      fullName: "",
-      idNumber: "",
-      phone: "",
-      assignee: clinicalOfficers[0],
-    });
-    setEditingId(null);
-    setModalOpen(true);
-  };
-
-  const openEditModal = (patient) => {
-    setModalMode("edit");
-    setForm({
-      fullName: patient.fullName || "",
-      idNumber: patient.idNumber || "",
-      phone: patient.phone || "",
-      assignee: patient.assignee || clinicalOfficers[0],
-    });
-    setEditingId(patient.id);
     setModalOpen(true);
   };
 
   const closeModal = () => {
-    if (modalLoading) return; // prevent close while loading
     setModalOpen(false);
   };
 
-  const handleFormChange = (e) => {
-    const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this patient?"))
-      return;
-    setLoading(true);
-    try {
-      await deleteDoc(doc(db, "patients", id));
-      showSuccess("Patient deleted successfully");
-      fetchPatients();
-    } catch (error) {
-      showError("Failed to delete patient: " + error.message);
-    }
-    setLoading(false);
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setModalLoading(true);
+    if (editingId) {
+      await updateDoc(doc(db, "ward", editingId), form);
+    } else {
+      await addDoc(collection(db, "ward"), form);
+    }
+    fetchRecords();
+    closeModal();
+  };
 
-    // Validation: basic
-    if (!form.fullName.trim()) {
-      showError("Full Name is required");
-      setModalLoading(false);
-      return;
+  const handleDelete = async (id) => {
+    if (window.confirm("Delete this record?")) {
+      await deleteDoc(doc(db, "ward", id));
+      fetchRecords();
     }
-    if (!form.idNumber.trim()) {
-      showError("ID Number is required");
-      setModalLoading(false);
-      return;
-    }
-    if (!form.phone.trim()) {
-      showError("Phone number is required");
-      setModalLoading(false);
-      return;
-    }
+  };
 
-    try {
-      const colRef = collection(db, "patients");
-      if (modalMode === "add") {
-        await addDoc(colRef, {
-          fullName: form.fullName.trim(),
-          idNumber: form.idNumber.trim(),
-          phone: form.phone.trim(),
-          assignee: form.assignee,
-          createdAt: new Date().toISOString(),
-        });
-        showSuccess("Patient added successfully");
-      } else if (modalMode === "edit") {
-        const docRef = doc(db, "patients", editingId);
-        await updateDoc(docRef, {
-          fullName: form.fullName.trim(),
-          idNumber: form.idNumber.trim(),
-          phone: form.phone.trim(),
-          assignee: form.assignee,
-        });
-        showSuccess("Patient updated successfully");
-      }
-      fetchPatients();
-      setModalOpen(false);
-    } catch (error) {
-      showError("Failed to save patient: " + error.message);
-    }
-    setModalLoading(false);
+  const filteredRecords = filterDate
+    ? records.filter((r) => r.admissionDate === filterDate)
+    : records;
+
+  const chartData = {
+    labels: filteredRecords.map((r) => r.patient),
+    datasets: [
+      {
+        label: "Ward Charges",
+        data: filteredRecords.map((r) => parseFloat(r.charges)),
+        backgroundColor: "#88C244",
+      },
+    ],
   };
 
   return (
     <div
-      style={{
-        minHeight: "100vh",
-        padding: 20,
-        fontFamily: "Arial, sans-serif",
-        backgroundColor: "#f5f5f5",
-        display: "flex",
-        flexDirection: "column",
-      }}
+      style={{ padding: 20, backgroundColor: "#f5f5f5", minHeight: "100vh" }}
     >
-      {/* <h1 style={{ color: "#3C51A1", marginBottom: 20 }}>Manage Patients</h1> */}
-
-      {/* Search and Add */}
-      <div
-        style={{
-          display: "flex",
-          marginBottom: 20,
-          gap: 10,
-          flexWrap: "wrap",
-          alignItems: "center",
-        }}
-      >
-        <div
-          style={{
-            position: "relative",
-            flexGrow: 1,
-            maxWidth: 400,
-          }}
-        >
-          <input
-            type="search"
-            placeholder="Search patients..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "10px 35px 10px 10px",
-              fontSize: 16,
-              borderRadius: 5,
-              border: "1px solid #ccc",
-            }}
-            aria-label="Search patients"
-          />
-          <FaSearch
-            style={{
-              position: "absolute",
-              right: 10,
-              top: "50%",
-              transform: "translateY(-50%)",
-              color: "#888",
-            }}
-          />
-        </div>
-
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2 style={{ color: "#3C51A1" }}>Ward Records</h2>
         <button
-          onClick={openAddModal}
+          onClick={() => openModal()}
           style={{
             backgroundColor: "#88C244",
             color: "white",
             border: "none",
-            borderRadius: 5,
             padding: "10px 20px",
-            fontSize: 16,
-            cursor: "pointer",
+            borderRadius: 5,
           }}
-          aria-label="Add patient"
         >
-          Add Patient
+          + Add Record
         </button>
       </div>
 
-      {/* Table */}
-      <div style={{ overflowX: "auto", flexGrow: 1 }}>
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            backgroundColor: "white",
-            boxShadow: "0 2px 8px rgb(0 0 0 / 0.1)",
+      <div className="mb-3">
+        <label style={{ color: "#3C51A1", fontWeight: "bold" }}>
+          Filter by Admission Date:
+        </label>
+        <input
+          type="date"
+          value={filterDate}
+          onChange={(e) => setFilterDate(e.target.value)}
+          className="form-control"
+          style={{ maxWidth: 250, marginTop: 5 }}
+        />
+      </div>
+
+      <div className="mb-4">
+        <Bar
+          data={chartData}
+          options={{
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+              title: { display: true, text: "Ward Charges per Patient" },
+            },
           }}
-        >
-          <thead>
-            <tr style={{ backgroundColor: "#88C244", color: "white" }}>
-              <th
-                style={{ padding: 12, border: "1px solid #ddd", minWidth: 140 }}
-              >
-                Full Name
-              </th>
-              <th
-                style={{ padding: 12, border: "1px solid #ddd", minWidth: 120 }}
-              >
-                ID Number
-              </th>
-              <th
-                style={{ padding: 12, border: "1px solid #ddd", minWidth: 120 }}
-              >
-                Phone
-              </th>
-              <th
-                style={{ padding: 12, border: "1px solid #ddd", minWidth: 150 }}
-              >
-                Assignee (Clinical Officer)
-              </th>
-              <th
-                style={{ padding: 12, border: "1px solid #ddd", minWidth: 100 }}
-                aria-label="Actions"
-              >
-                Actions
-              </th>
+        />
+      </div>
+
+      <div className="table-responsive">
+        <table className="table table-bordered">
+          <thead style={{ backgroundColor: "#3C51A1", color: "white" }}>
+            <tr>
+              <th>Patient </th>
+              <th>Reason</th>
+              <th>Admission Date</th>
+              <th>Discharge Date</th>
+              <th>Charges</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={5} style={{ textAlign: "center", padding: 20 }}>
-                  Loading...
-                </td>
-              </tr>
-            ) : filteredPatients.length === 0 ? (
-              <tr>
-                <td colSpan={5} style={{ textAlign: "center", padding: 20 }}>
-                  No patients found
-                </td>
-              </tr>
-            ) : (
-              filteredPatients.map((patient) => (
-                <tr key={patient.id} style={{ borderBottom: "1px solid #ddd" }}>
-                  <td style={{ padding: 12 }}>{patient.fullName}</td>
-                  <td style={{ padding: 12 }}>{patient.idNumber}</td>
-                  <td style={{ padding: 12 }}>{patient.phone}</td>
-                  <td style={{ padding: 12 }}>{patient.assignee}</td>
-                  <td
-                    style={{
-                      padding: 12,
-                      textAlign: "center",
-                      display: "flex",
-                      justifyContent: "center",
-                      gap: 15,
-                    }}
+            {filteredRecords.map((rec) => (
+              <tr key={rec.id}>
+                <td>{rec.patientName}</td>
+                <td>{rec.reason}</td>
+                <td>{rec.admissionDate}</td>
+                <td>{rec.dischargeDate}</td>
+                <td>{rec.charges}</td>
+                <td>
+                  <button
+                    onClick={() => openModal(rec)}
+                    className="btn btn-sm text-primary"
                   >
-                    <button
-                      onClick={() => openEditModal(patient)}
-                      aria-label={`Edit patient ${patient.fullName}`}
-                      title="Edit"
-                      style={{
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        color: "#3C51A1",
-                      }}
-                    >
-                      <FaEdit size={18} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(patient.id)}
-                      aria-label={`Delete patient ${patient.fullName}`}
-                      title="Delete"
-                      style={{
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        color: "#e53935",
-                      }}
-                    >
-                      <FaTrash size={18} />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
+                    <FaEdit />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(rec.id)}
+                    className="btn btn-sm text-danger"
+                  >
+                    <FaTrash />
+                  </button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
 
-      {/* Add/Edit Modal */}
       {modalOpen && (
         <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="patient-modal-title"
-          tabIndex={-1}
+          className="modal d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: "rgba(0,0,0,0.4)" }}
           onClick={closeModal}
-          style={{
-            position: "fixed",
-            inset: 0,
-            backgroundColor: "rgba(0,0,0,0.4)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1100,
-          }}
         >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              backgroundColor: "white",
-              borderRadius: 8,
-              padding: 24,
-              width: "100%",
-              maxWidth: 480,
-              boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
-              maxHeight: "90vh",
-              overflowY: "auto",
-            }}
-          >
-            <h2
-              id="patient-modal-title"
-              style={{ color: "#3C51A1", marginBottom: 20 }}
-            >
-              {modalMode === "add" ? "Add Patient" : "Edit Patient"}
-            </h2>
-
-            <form
-              onSubmit={handleSubmit}
-              style={{ display: "flex", flexDirection: "column", gap: 15 }}
-            >
-              <label style={{ fontWeight: "bold" }}>
-                Full Name <span style={{ color: "red" }}>*</span>
-                <input
-                  name="fullName"
-                  value={form.fullName}
-                  onChange={handleFormChange}
-                  type="text"
-                  required
-                  style={{
-                    width: "100%",
-                    padding: 10,
-                    fontSize: 16,
-                    borderRadius: 5,
-                    border: "1px solid #ccc",
-                    marginTop: 6,
-                  }}
-                  autoFocus
-                />
-              </label>
-
-              <label style={{ fontWeight: "bold" }}>
-                ID Number <span style={{ color: "red" }}>*</span>
-                <input
-                  name="idNumber"
-                  value={form.idNumber}
-                  onChange={handleFormChange}
-                  type="text"
-                  required
-                  style={{
-                    width: "100%",
-                    padding: 10,
-                    fontSize: 16,
-                    borderRadius: 5,
-                    border: "1px solid #ccc",
-                    marginTop: 6,
-                  }}
-                />
-              </label>
-
-              <label style={{ fontWeight: "bold" }}>
-                Phone <span style={{ color: "red" }}>*</span>
-                <input
-                  name="phone"
-                  value={form.phone}
-                  onChange={handleFormChange}
-                  type="tel"
-                  required
-                  style={{
-                    width: "100%",
-                    padding: 10,
-                    fontSize: 16,
-                    borderRadius: 5,
-                    border: "1px solid #ccc",
-                    marginTop: 6,
-                  }}
-                />
-              </label>
-
-              <label style={{ fontWeight: "bold" }}>
-                Assignee (Clinical Officer)
-                <select
-                  name="assignee"
-                  value={form.assignee}
-                  onChange={handleFormChange}
-                  style={{
-                    width: "100%",
-                    padding: 10,
-                    fontSize: 16,
-                    borderRadius: 5,
-                    border: "1px solid #ccc",
-                    marginTop: 6,
-                  }}
-                >
-                  {clinicalOfficers.map((co) => (
-                    <option key={co} value={co}>
-                      {co}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
+          <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-content">
               <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  gap: 10,
-                  marginTop: 10,
-                }}
+                className="modal-header"
+                style={{ backgroundColor: "#3C51A1", color: "white" }}
               >
+                <h5 className="modal-title">
+                  {editingId ? "Edit Record" : "Add Record"}
+                </h5>
                 <button
                   type="button"
+                  className="btn-close"
                   onClick={closeModal}
-                  disabled={modalLoading}
-                  style={{
-                    backgroundColor: "#e53935",
-                    color: "white",
-                    padding: "10px 20px",
-                    fontSize: 16,
-                    borderRadius: 5,
-                    border: "none",
-                    cursor: modalLoading ? "not-allowed" : "pointer",
-                  }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={modalLoading}
-                  style={{
-                    backgroundColor: "#88C244",
-                    color: "white",
-                    padding: "10px 20px",
-                    fontSize: 16,
-                    borderRadius: 5,
-                    border: "none",
-                    cursor: modalLoading ? "not-allowed" : "pointer",
-                  }}
-                >
-                  {modalLoading
-                    ? modalMode === "add"
-                      ? "Adding..."
-                      : "Updating..."
-                    : modalMode === "add"
-                    ? "Add Patient"
-                    : "Update Patient"}
-                </button>
+                ></button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Success Modal */}
-      {successModalOpen && (
-        <div
-          role="alertdialog"
-          aria-modal="true"
-          tabIndex={-1}
-          onClick={() => setSuccessModalOpen(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            backgroundColor: "rgba(0,0,0,0.3)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1200,
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              backgroundColor: "white",
-              padding: 30,
-              borderRadius: 8,
-              maxWidth: 400,
-              textAlign: "center",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-            }}
-          >
-            <h3 style={{ color: "#88C244", marginBottom: 20 }}>Success!</h3>
-            <p>{successMessage}</p>
-            <button
-              onClick={() => setSuccessModalOpen(false)}
-              style={{
-                marginTop: 20,
-                backgroundColor: "#3C51A1",
-                color: "white",
-                padding: "10px 20px",
-                border: "none",
-                borderRadius: 5,
-                cursor: "pointer",
-                fontSize: 16,
-              }}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Error Modal */}
-      {errorModalOpen && (
-        <div
-          role="alertdialog"
-          aria-modal="true"
-          tabIndex={-1}
-          onClick={() => setErrorModalOpen(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            backgroundColor: "rgba(0,0,0,0.3)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1200,
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              backgroundColor: "white",
-              padding: 30,
-              borderRadius: 8,
-              maxWidth: 400,
-              textAlign: "center",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-            }}
-          >
-            <h3 style={{ color: "#e53935", marginBottom: 20 }}>Error!</h3>
-            <p>{errorMessage}</p>
-            <button
-              onClick={() => setErrorModalOpen(false)}
-              style={{
-                marginTop: 20,
-                backgroundColor: "#3C51A1",
-                color: "white",
-                padding: "10px 20px",
-                border: "none",
-                borderRadius: 5,
-                cursor: "pointer",
-                fontSize: 16,
-              }}
-            >
-              Close
-            </button>
+              <form onSubmit={handleSubmit}>
+                <div className="modal-body">
+                  <div className="mb-3">
+                    <label>Patient</label>
+                    <input
+                      className="form-control"
+                      name="patientName"
+                      value={form.patientName}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label>Reason</label>
+                    <input
+                      className="form-control"
+                      name="reason"
+                      value={form.reason}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label>Admission Date</label>
+                    <input
+                      type="date"
+                      className="form-control"
+                      name="admissionDate"
+                      value={form.admissionDate}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label>Discharge Date</label>
+                    <input
+                      type="date"
+                      className="form-control"
+                      name="dischargeDate"
+                      value={form.dischargeDate}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label>Ward Charges</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      name="charges"
+                      value={form.charges}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={closeModal}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-success">
+                    {editingId ? "Update" : "Add"}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

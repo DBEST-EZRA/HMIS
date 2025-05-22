@@ -10,12 +10,7 @@ import {
 } from "firebase/firestore";
 import { FaEdit, FaTrash, FaSearch } from "react-icons/fa";
 
-const clinicalOfficers = [
-  "Alice Johnson",
-  "Bob Smith",
-  "Carol Williams",
-  "David Brown",
-]; // Example clinical officers — you can fetch dynamically if you want
+const clinicalOfficers = ["Clinical Officer1", "Doctor1", "Nurse1"];
 
 const PatientDetails = () => {
   const [patients, setPatients] = useState([]);
