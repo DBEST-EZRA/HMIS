@@ -15,8 +15,11 @@ const BirthRecords = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredPatients, setFilteredPatients] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [filterDate, setFilterDate] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
+  });
 
-  // Modal states
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState("add");
   const [modalLoading, setModalLoading] = useState(false);
@@ -27,7 +30,6 @@ const BirthRecords = () => {
   const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Form state for add/edit
   const [form, setForm] = useState({
     childName: "",
     fathersName: "",
@@ -44,18 +46,20 @@ const BirthRecords = () => {
   }, []);
 
   useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setFilteredPatients(births);
-    } else {
-      const filtered = births.filter((p) =>
+    let filtered = births;
+    if (filterDate) {
+      filtered = filtered.filter((p) => p.createdAt?.startsWith(filterDate));
+    }
+    if (searchTerm.trim() !== "") {
+      filtered = filtered.filter((p) =>
         Object.values(p)
           .join(" ")
           .toLowerCase()
           .includes(searchTerm.toLowerCase())
       );
-      setFilteredPatients(filtered);
     }
-  }, [searchTerm, births]);
+    setFilteredPatients(filtered);
+  }, [searchTerm, births, filterDate]);
 
   const fetchPatients = async () => {
     setLoading(true);
@@ -64,7 +68,6 @@ const BirthRecords = () => {
       const snapshot = await getDocs(colRef);
       const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setPatients(list);
-      setFilteredPatients(list);
     } catch (error) {
       showError("Failed to fetch Birth Records: " + error.message);
     }
@@ -138,20 +141,8 @@ const BirthRecords = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setModalLoading(true);
-
-    // Validation: basic
-    if (!form.childName.trim()) {
-      showError("Full Name is required");
-      setModalLoading(false);
-      return;
-    }
-    if (!form.idNumber.trim()) {
-      showError("ID Number is required");
-      setModalLoading(false);
-      return;
-    }
-    if (!form.phone.trim()) {
-      showError("Phone number is required");
+    if (!form.childName.trim() || !form.idNumber.trim() || !form.phone.trim()) {
+      showError("Please fill in all required fields.");
       setModalLoading(false);
       return;
     }
@@ -160,27 +151,12 @@ const BirthRecords = () => {
       const colRef = collection(db, "birthrecords");
       if (modalMode === "add") {
         await addDoc(colRef, {
-          childName: form.childName.trim(),
-          fathersName: form.fathersName.trim(),
-          mothersName: form.mothersName.trim(),
-          birthWeight: form.birthWeight.trim(),
-          birthDate: form.birthDate.trim(),
-          idNumber: form.idNumber.trim(),
-          phone: form.phone.trim(),
+          ...form,
           createdAt: new Date().toISOString(),
         });
         showSuccess("Birth Record added successfully");
-      } else if (modalMode === "edit") {
-        const docRef = doc(db, "birthrecords", editingId);
-        await updateDoc(docRef, {
-          childName: form.childName.trim(),
-          fathersName: form.fathersName.trim(),
-          mothersName: form.mothersName.trim(),
-          birthWeight: form.birthWeight.trim(),
-          birthDate: form.birthDate.trim(),
-          idNumber: form.idNumber.trim(),
-          phone: form.phone.trim(),
-        });
+      } else {
+        await updateDoc(doc(db, "birthrecords", editingId), form);
         showSuccess("Birth Record updated successfully");
       }
       fetchPatients();
@@ -203,7 +179,23 @@ const BirthRecords = () => {
       }}
     >
       {/* <h1 style={{ color: "#3C51A1", marginBottom: 20 }}>Manage Patients</h1> */}
-
+      {/* Filter Date */}
+      <div style={{ marginBottom: 15 }}>
+        <label style={{ fontWeight: "bold", color: "#3C51A1" }}>
+          Filter by Date:{" "}
+        </label>
+        <input
+          type="date"
+          value={filterDate}
+          onChange={(e) => setFilterDate(e.target.value)}
+          style={{
+            marginLeft: 10,
+            padding: 6,
+            borderRadius: 5,
+            border: "1px solid #ccc",
+          }}
+        />
+      </div>
       {/* Search and Add */}
       <div
         style={{
