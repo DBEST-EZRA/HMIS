@@ -247,10 +247,12 @@ const AddEmployee = () => {
   return (
     <div
       style={{
-        maxWidth: 900,
-        margin: "auto",
+        height: "100vh",
+        width: "100%",
         padding: 20,
-        fontFamily: "Arial",
+        overflowY: "auto",
+        fontFamily: "Arial, sans-serif",
+        backgroundColor: "#f9f9f9",
       }}
     >
       {/* Toggle button */}
