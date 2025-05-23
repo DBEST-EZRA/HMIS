@@ -17,6 +17,9 @@ const PatientDetails = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredPatients, setFilteredPatients] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [filterDate, setFilterDate] = useState(
+    () => new Date().toISOString().split("T")[0]
+  );
 
   // Modal states
   const [modalOpen, setModalOpen] = useState(false);
@@ -43,18 +46,17 @@ const PatientDetails = () => {
   }, []);
 
   useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setFilteredPatients(patients);
-    } else {
-      const filtered = patients.filter((p) =>
-        Object.values(p)
-          .join(" ")
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())
-      );
-      setFilteredPatients(filtered);
-    }
-  }, [searchTerm, patients]);
+    const filtered = patients.filter((p) => {
+      const createdDate = p.createdAt ? p.createdAt.split("T")[0] : "";
+      const matchesDate = createdDate === filterDate;
+      const matchesSearch = Object.values(p)
+        .join(" ")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      return matchesDate && matchesSearch;
+    });
+    setFilteredPatients(filtered);
+  }, [searchTerm, patients, filterDate]);
 
   const fetchPatients = async () => {
     setLoading(true);
@@ -63,7 +65,6 @@ const PatientDetails = () => {
       const snapshot = await getDocs(colRef);
       const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setPatients(list);
-      setFilteredPatients(list);
     } catch (error) {
       showError("Failed to fetch patients: " + error.message);
     }
@@ -132,7 +133,6 @@ const PatientDetails = () => {
     e.preventDefault();
     setModalLoading(true);
 
-    // Validation: basic
     if (!form.fullName.trim()) {
       showError("Full Name is required");
       setModalLoading(false);
@@ -232,6 +232,18 @@ const PatientDetails = () => {
             }}
           />
         </div>
+
+        <input
+          type="date"
+          value={filterDate}
+          onChange={(e) => setFilterDate(e.target.value)}
+          style={{
+            padding: "10px",
+            fontSize: 16,
+            borderRadius: 5,
+            border: "1px solid #ccc",
+          }}
+        />
 
         <button
           onClick={openAddModal}
@@ -396,7 +408,7 @@ const PatientDetails = () => {
               style={{ display: "flex", flexDirection: "column", gap: 15 }}
             >
               <label style={{ fontWeight: "bold" }}>
-                Full Name <span style={{ color: "red" }}>*</span>
+                Full Name <span style={{ color: "#3C51A1" }}>*</span>
                 <input
                   name="fullName"
                   value={form.fullName}
@@ -416,7 +428,7 @@ const PatientDetails = () => {
               </label>
 
               <label style={{ fontWeight: "bold" }}>
-                ID Number <span style={{ color: "red" }}>*</span>
+                ID Number <span style={{ color: "#3C51A1" }}>*</span>
                 <input
                   name="idNumber"
                   value={form.idNumber}
@@ -435,7 +447,7 @@ const PatientDetails = () => {
               </label>
 
               <label style={{ fontWeight: "bold" }}>
-                Phone <span style={{ color: "red" }}>*</span>
+                Phone <span style={{ color: "#3C51A1" }}>*</span>
                 <input
                   name="phone"
                   value={form.phone}
@@ -489,7 +501,7 @@ const PatientDetails = () => {
                   onClick={closeModal}
                   disabled={modalLoading}
                   style={{
-                    backgroundColor: "#e53935",
+                    backgroundColor: "#3C51A1",
                     color: "white",
                     padding: "10px 20px",
                     fontSize: 16,
