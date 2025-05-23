@@ -1,354 +1,262 @@
-import React, { useEffect, useState } from "react";
-import { db } from "../Configuration/Config";
+import React, { useState, useEffect } from "react";
+import { FaEdit, FaTrash, FaSearch } from "react-icons/fa";
 import {
   collection,
-  addDoc,
   getDocs,
+  addDoc,
   updateDoc,
   deleteDoc,
   doc,
+  query,
+  where,
+  Timestamp,
 } from "firebase/firestore";
-import { FaEdit, FaTrash, FaSearch } from "react-icons/fa";
-
-const clinicalOfficers = [
-  "Alice Johnson",
-  "Bob Smith",
-  "Carol Williams",
-  "David Brown",
-]; // Example clinical officers — you can fetch dynamically if you want
+import { db } from "../Configuration/Config";
 
 const Ambulance = () => {
-  const [patients, setPatients] = useState([]);
+  const [records, setRecords] = useState([]);
+  const [filteredRecords, setFilteredRecords] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredPatients, setFilteredPatients] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  // Modal states
+  const [filterDate, setFilterDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState("add"); // add or edit
-  const [modalLoading, setModalLoading] = useState(false);
-
-  const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState("add");
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    id: "",
+    case: "",
+    pickupLocation: "",
+    charges: "",
+  });
+  const [editingDocId, setEditingDocId] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
-
-  const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Form state for add/edit
-  const [form, setForm] = useState({
-    fullName: "",
-    idNumber: "",
-    phone: "",
-    assignee: clinicalOfficers[0],
-  });
-  const [editingId, setEditingId] = useState(null);
-
   useEffect(() => {
-    fetchPatients();
-  }, []);
+    fetchRecords();
+  }, [filterDate]);
+
+  const fetchRecords = async () => {
+    const start = new Date(filterDate);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(filterDate);
+    end.setHours(23, 59, 59, 999);
+
+    const q = query(
+      collection(db, "ambulance"),
+      where("timestamp", ">=", Timestamp.fromDate(start)),
+      where("timestamp", "<=", Timestamp.fromDate(end))
+    );
+
+    const snapshot = await getDocs(q);
+    const list = snapshot.docs.map((d) => ({ docId: d.id, ...d.data() }));
+    setRecords(list);
+    setFilteredRecords(list);
+  };
 
   useEffect(() => {
     if (searchTerm.trim() === "") {
-      setFilteredPatients(patients);
+      setFilteredRecords(records);
     } else {
-      const filtered = patients.filter((p) =>
-        Object.values(p)
+      const filtered = records.filter((r) =>
+        Object.values(r)
           .join(" ")
           .toLowerCase()
           .includes(searchTerm.toLowerCase())
       );
-      setFilteredPatients(filtered);
+      setFilteredRecords(filtered);
     }
-  }, [searchTerm, patients]);
+  }, [searchTerm, records]);
 
-  const fetchPatients = async () => {
-    setLoading(true);
-    try {
-      const colRef = collection(db, "patients");
-      const snapshot = await getDocs(colRef);
-      const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setPatients(list);
-      setFilteredPatients(list);
-    } catch (error) {
-      showError("Failed to fetch patients: " + error.message);
+  const openModal = (mode = "add", record = null) => {
+    setModalMode(mode);
+    if (record) {
+      setForm({
+        name: record.name,
+        phone: record.phone,
+        id: record.id,
+        case: record.case,
+        pickupLocation: record.pickupLocation,
+        charges: record.charges,
+      });
+      setEditingDocId(record.docId);
+    } else {
+      setForm({
+        name: "",
+        phone: "",
+        id: "",
+        case: "",
+        pickupLocation: "",
+        charges: "",
+      });
+      setEditingDocId(null);
     }
-    setLoading(false);
-  };
-
-  const showError = (msg) => {
-    setErrorMessage(msg);
-    setErrorModalOpen(true);
-  };
-
-  const showSuccess = (msg) => {
-    setSuccessMessage(msg);
-    setSuccessModalOpen(true);
-  };
-
-  const openAddModal = () => {
-    setModalMode("add");
-    setForm({
-      fullName: "",
-      idNumber: "",
-      phone: "",
-      assignee: clinicalOfficers[0],
-    });
-    setEditingId(null);
     setModalOpen(true);
-  };
-
-  const openEditModal = (patient) => {
-    setModalMode("edit");
-    setForm({
-      fullName: patient.fullName || "",
-      idNumber: patient.idNumber || "",
-      phone: patient.phone || "",
-      assignee: patient.assignee || clinicalOfficers[0],
-    });
-    setEditingId(patient.id);
-    setModalOpen(true);
-  };
-
-  const closeModal = () => {
-    if (modalLoading) return; // prevent close while loading
-    setModalOpen(false);
   };
 
   const handleFormChange = (e) => {
-    const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this patient?"))
-      return;
-    setLoading(true);
-    try {
-      await deleteDoc(doc(db, "patients", id));
-      showSuccess("Patient deleted successfully");
-      fetchPatients();
-    } catch (error) {
-      showError("Failed to delete patient: " + error.message);
-    }
-    setLoading(false);
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setModalLoading(true);
-
-    // Validation: basic
-    if (!form.fullName.trim()) {
-      showError("Full Name is required");
-      setModalLoading(false);
-      return;
-    }
-    if (!form.idNumber.trim()) {
-      showError("ID Number is required");
-      setModalLoading(false);
-      return;
-    }
-    if (!form.phone.trim()) {
-      showError("Phone number is required");
-      setModalLoading(false);
-      return;
-    }
+    const data = {
+      ...form,
+      timestamp: Timestamp.fromDate(new Date(filterDate)),
+    };
 
     try {
-      const colRef = collection(db, "patients");
-      if (modalMode === "add") {
-        await addDoc(colRef, {
-          fullName: form.fullName.trim(),
-          idNumber: form.idNumber.trim(),
-          phone: form.phone.trim(),
-          assignee: form.assignee,
-          createdAt: new Date().toISOString(),
-        });
-        showSuccess("Patient added successfully");
-      } else if (modalMode === "edit") {
-        const docRef = doc(db, "patients", editingId);
-        await updateDoc(docRef, {
-          fullName: form.fullName.trim(),
-          idNumber: form.idNumber.trim(),
-          phone: form.phone.trim(),
-          assignee: form.assignee,
-        });
-        showSuccess("Patient updated successfully");
+      if (modalMode === "edit" && editingDocId) {
+        await updateDoc(doc(db, "ambulance", editingDocId), data);
+        setSuccessMessage("Record updated successfully.");
+      } else {
+        await addDoc(collection(db, "ambulance"), data);
+        setSuccessMessage("Record added successfully.");
       }
-      fetchPatients();
       setModalOpen(false);
+      fetchRecords();
     } catch (error) {
-      showError("Failed to save patient: " + error.message);
+      setErrorMessage("An error occurred. Please try again.");
     }
-    setModalLoading(false);
+  };
+
+  const handleDelete = async (docId) => {
+    if (window.confirm("Delete this record?")) {
+      try {
+        await deleteDoc(doc(db, "ambulance", docId));
+        fetchRecords();
+      } catch (error) {
+        setErrorMessage("Failed to delete record.");
+      }
+    }
+  };
+
+  const inputStyle = {
+    padding: 10,
+    fontSize: 16,
+    borderRadius: 5,
+    border: "1px solid #ccc",
+  };
+
+  const cancelStyle = {
+    backgroundColor: "#3C51A1",
+    color: "white",
+    padding: "10px 20px",
+    borderRadius: 5,
+    border: "none",
+    cursor: "pointer",
+  };
+
+  const submitStyle = {
+    backgroundColor: "#88C244",
+    color: "white",
+    padding: "10px 20px",
+    borderRadius: 5,
+    border: "none",
+    cursor: "pointer",
+  };
+
+  const modalStyle = {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1200,
+  };
+
+  const alertBoxStyle = {
+    backgroundColor: "white",
+    padding: 30,
+    borderRadius: 8,
+    maxWidth: 400,
+    textAlign: "center",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        padding: 20,
-        fontFamily: "Arial, sans-serif",
-        backgroundColor: "#f5f5f5",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      {/* <h1 style={{ color: "#3C51A1", marginBottom: 20 }}>Manage Patients</h1> */}
+    <div style={{ padding: 20, background: "#f5f5f5", minHeight: "100vh" }}>
+      <h2 style={{ color: "#3C51A1", marginBottom: 20 }}>Ambulance Records</h2>
 
-      {/* Search and Add */}
       <div
-        style={{
-          display: "flex",
-          marginBottom: 20,
-          gap: 10,
-          flexWrap: "wrap",
-          alignItems: "center",
-        }}
+        style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}
       >
-        <div
-          style={{
-            position: "relative",
-            flexGrow: 1,
-            maxWidth: 400,
-          }}
-        >
-          <input
-            type="search"
-            placeholder="Search patients..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "10px 35px 10px 10px",
-              fontSize: 16,
-              borderRadius: 5,
-              border: "1px solid #ccc",
-            }}
-            aria-label="Search patients"
-          />
-          <FaSearch
-            style={{
-              position: "absolute",
-              right: 10,
-              top: "50%",
-              transform: "translateY(-50%)",
-              color: "#888",
-            }}
-          />
-        </div>
+        <input
+          type="date"
+          value={filterDate}
+          onChange={(e) => setFilterDate(e.target.value)}
+          style={inputStyle}
+        />
 
-        <button
-          onClick={openAddModal}
-          style={{
-            backgroundColor: "#88C244",
-            color: "white",
-            border: "none",
-            borderRadius: 5,
-            padding: "10px 20px",
-            fontSize: 16,
-            cursor: "pointer",
-          }}
-          aria-label="Add patient"
-        >
-          Add Patient
+        <input
+          type="search"
+          placeholder="Search..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={inputStyle}
+        />
+
+        <button onClick={() => openModal("add")} style={submitStyle}>
+          Add Record
         </button>
       </div>
 
-      {/* Table */}
-      <div style={{ overflowX: "auto", flexGrow: 1 }}>
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            backgroundColor: "white",
-            boxShadow: "0 2px 8px rgb(0 0 0 / 0.1)",
-          }}
-        >
-          <thead>
-            <tr style={{ backgroundColor: "#88C244", color: "white" }}>
-              <th
-                style={{ padding: 12, border: "1px solid #ddd", minWidth: 140 }}
-              >
-                Full Name
-              </th>
-              <th
-                style={{ padding: 12, border: "1px solid #ddd", minWidth: 120 }}
-              >
-                ID Number
-              </th>
-              <th
-                style={{ padding: 12, border: "1px solid #ddd", minWidth: 120 }}
-              >
-                Phone
-              </th>
-              <th
-                style={{ padding: 12, border: "1px solid #ddd", minWidth: 150 }}
-              >
-                Assignee (Clinical Officer)
-              </th>
-              <th
-                style={{ padding: 12, border: "1px solid #ddd", minWidth: 100 }}
-                aria-label="Actions"
-              >
-                Actions
-              </th>
+      <div style={{ overflowX: "auto", background: "white", borderRadius: 8 }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead style={{ backgroundColor: "#3C51A1", color: "white" }}>
+            <tr>
+              <th style={{ padding: 12 }}>Name</th>
+              <th style={{ padding: 12 }}>Phone</th>
+              <th style={{ padding: 12 }}>ID</th>
+              <th style={{ padding: 12 }}>Case</th>
+              <th style={{ padding: 12 }}>Pickup Location</th>
+              <th style={{ padding: 12 }}>Charges</th>
+              <th style={{ padding: 12 }}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {loading ? (
+            {filteredRecords.length === 0 ? (
               <tr>
-                <td colSpan={5} style={{ textAlign: "center", padding: 20 }}>
-                  Loading...
-                </td>
-              </tr>
-            ) : filteredPatients.length === 0 ? (
-              <tr>
-                <td colSpan={5} style={{ textAlign: "center", padding: 20 }}>
-                  No patients found
+                <td colSpan={7} style={{ textAlign: "center", padding: 20 }}>
+                  No records found
                 </td>
               </tr>
             ) : (
-              filteredPatients.map((patient) => (
-                <tr key={patient.id} style={{ borderBottom: "1px solid #ddd" }}>
-                  <td style={{ padding: 12 }}>{patient.fullName}</td>
-                  <td style={{ padding: 12 }}>{patient.idNumber}</td>
-                  <td style={{ padding: 12 }}>{patient.phone}</td>
-                  <td style={{ padding: 12 }}>{patient.assignee}</td>
-                  <td
-                    style={{
-                      padding: 12,
-                      textAlign: "center",
-                      display: "flex",
-                      justifyContent: "center",
-                      gap: 15,
-                    }}
-                  >
+              filteredRecords.map((r) => (
+                <tr key={r.docId}>
+                  <td style={{ padding: 12 }}>{r.name}</td>
+                  <td style={{ padding: 12 }}>{r.phone}</td>
+                  <td style={{ padding: 12 }}>{r.id}</td>
+                  <td style={{ padding: 12 }}>{r.case}</td>
+                  <td style={{ padding: 12 }}>{r.pickupLocation}</td>
+                  <td style={{ padding: 12 }}>{r.charges}</td>
+                  <td style={{ padding: 12 }}>
                     <button
-                      onClick={() => openEditModal(patient)}
-                      aria-label={`Edit patient ${patient.fullName}`}
-                      title="Edit"
+                      onClick={() => openModal("edit", r)}
                       style={{
+                        marginRight: 10,
                         background: "none",
                         border: "none",
-                        cursor: "pointer",
                         color: "#3C51A1",
                       }}
                     >
-                      <FaEdit size={18} />
+                      <FaEdit />
                     </button>
                     <button
-                      onClick={() => handleDelete(patient.id)}
-                      aria-label={`Delete patient ${patient.fullName}`}
-                      title="Delete"
+                      onClick={() => handleDelete(r.docId)}
                       style={{
                         background: "none",
                         border: "none",
-                        cursor: "pointer",
-                        color: "#e53935",
+                        color: "#3C51A1",
                       }}
                     >
-                      <FaTrash size={18} />
+                      <FaTrash />
                     </button>
                   </td>
                 </tr>
@@ -358,173 +266,85 @@ const Ambulance = () => {
         </table>
       </div>
 
-      {/* Add/Edit Modal */}
       {modalOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="patient-modal-title"
-          tabIndex={-1}
-          onClick={closeModal}
-          style={{
-            position: "fixed",
-            inset: 0,
-            backgroundColor: "rgba(0,0,0,0.4)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1100,
-          }}
-        >
+        <div onClick={() => setModalOpen(false)} style={modalStyle}>
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              backgroundColor: "white",
+              background: "white",
+              padding: 30,
               borderRadius: 8,
-              padding: 24,
-              width: "100%",
-              maxWidth: 480,
-              boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
-              maxHeight: "90vh",
-              overflowY: "auto",
+              width: 400,
             }}
           >
-            <h2
-              id="patient-modal-title"
-              style={{ color: "#3C51A1", marginBottom: 20 }}
-            >
-              {modalMode === "add" ? "Add Patient" : "Edit Patient"}
-            </h2>
-
+            <h3 style={{ color: "#3C51A1", marginBottom: 20 }}>
+              {modalMode === "edit" ? "Edit Record" : "Add Record"}
+            </h3>
             <form
               onSubmit={handleSubmit}
               style={{ display: "flex", flexDirection: "column", gap: 15 }}
             >
-              <label style={{ fontWeight: "bold" }}>
-                Full Name <span style={{ color: "red" }}>*</span>
-                <input
-                  name="fullName"
-                  value={form.fullName}
-                  onChange={handleFormChange}
-                  type="text"
-                  required
-                  style={{
-                    width: "100%",
-                    padding: 10,
-                    fontSize: 16,
-                    borderRadius: 5,
-                    border: "1px solid #ccc",
-                    marginTop: 6,
-                  }}
-                  autoFocus
-                />
-              </label>
-
-              <label style={{ fontWeight: "bold" }}>
-                ID Number <span style={{ color: "red" }}>*</span>
-                <input
-                  name="idNumber"
-                  value={form.idNumber}
-                  onChange={handleFormChange}
-                  type="text"
-                  required
-                  style={{
-                    width: "100%",
-                    padding: 10,
-                    fontSize: 16,
-                    borderRadius: 5,
-                    border: "1px solid #ccc",
-                    marginTop: 6,
-                  }}
-                />
-              </label>
-
-              <label style={{ fontWeight: "bold" }}>
-                Phone <span style={{ color: "red" }}>*</span>
-                <input
-                  name="phone"
-                  value={form.phone}
-                  onChange={handleFormChange}
-                  type="tel"
-                  required
-                  style={{
-                    width: "100%",
-                    padding: 10,
-                    fontSize: 16,
-                    borderRadius: 5,
-                    border: "1px solid #ccc",
-                    marginTop: 6,
-                  }}
-                />
-              </label>
-
-              <label style={{ fontWeight: "bold" }}>
-                Assignee (Clinical Officer)
-                <select
-                  name="assignee"
-                  value={form.assignee}
-                  onChange={handleFormChange}
-                  style={{
-                    width: "100%",
-                    padding: 10,
-                    fontSize: 16,
-                    borderRadius: 5,
-                    border: "1px solid #ccc",
-                    marginTop: 6,
-                  }}
-                >
-                  {clinicalOfficers.map((co) => (
-                    <option key={co} value={co}>
-                      {co}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
+              <input
+                name="name"
+                placeholder="Patient Name"
+                value={form.name}
+                onChange={handleFormChange}
+                required
+                style={inputStyle}
+              />
+              <input
+                name="phone"
+                placeholder="Phone"
+                value={form.phone}
+                onChange={handleFormChange}
+                required
+                style={inputStyle}
+              />
+              <input
+                name="id"
+                placeholder="ID"
+                value={form.id}
+                onChange={handleFormChange}
+                required
+                style={inputStyle}
+              />
+              <input
+                name="case"
+                placeholder="Case"
+                value={form.case}
+                onChange={handleFormChange}
+                required
+                style={inputStyle}
+              />
+              <input
+                name="pickupLocation"
+                placeholder="Pickup Location"
+                value={form.pickupLocation}
+                onChange={handleFormChange}
+                required
+                style={inputStyle}
+              />
+              <input
+                name="charges"
+                placeholder="Charges"
+                type="number"
+                value={form.charges}
+                onChange={handleFormChange}
+                required
+                style={inputStyle}
+              />
               <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  gap: 10,
-                  marginTop: 10,
-                }}
+                style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}
               >
                 <button
                   type="button"
-                  onClick={closeModal}
-                  disabled={modalLoading}
-                  style={{
-                    backgroundColor: "#e53935",
-                    color: "white",
-                    padding: "10px 20px",
-                    fontSize: 16,
-                    borderRadius: 5,
-                    border: "none",
-                    cursor: modalLoading ? "not-allowed" : "pointer",
-                  }}
+                  onClick={() => setModalOpen(false)}
+                  style={cancelStyle}
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  disabled={modalLoading}
-                  style={{
-                    backgroundColor: "#88C244",
-                    color: "white",
-                    padding: "10px 20px",
-                    fontSize: 16,
-                    borderRadius: 5,
-                    border: "none",
-                    cursor: modalLoading ? "not-allowed" : "pointer",
-                  }}
-                >
-                  {modalLoading
-                    ? modalMode === "add"
-                      ? "Adding..."
-                      : "Updating..."
-                    : modalMode === "add"
-                    ? "Add Patient"
-                    : "Update Patient"}
+                <button type="submit" style={submitStyle}>
+                  Submit
                 </button>
               </div>
             </form>
@@ -532,98 +352,24 @@ const Ambulance = () => {
         </div>
       )}
 
-      {/* Success Modal */}
-      {successModalOpen && (
-        <div
-          role="alertdialog"
-          aria-modal="true"
-          tabIndex={-1}
-          onClick={() => setSuccessModalOpen(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            backgroundColor: "rgba(0,0,0,0.3)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1200,
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              backgroundColor: "white",
-              padding: 30,
-              borderRadius: 8,
-              maxWidth: 400,
-              textAlign: "center",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-            }}
-          >
+      {successMessage && (
+        <div style={modalStyle} onClick={() => setSuccessMessage("")}>
+          <div style={alertBoxStyle}>
             <h3 style={{ color: "#88C244", marginBottom: 20 }}>Success!</h3>
             <p>{successMessage}</p>
-            <button
-              onClick={() => setSuccessModalOpen(false)}
-              style={{
-                marginTop: 20,
-                backgroundColor: "#3C51A1",
-                color: "white",
-                padding: "10px 20px",
-                border: "none",
-                borderRadius: 5,
-                cursor: "pointer",
-                fontSize: 16,
-              }}
-            >
+            <button onClick={() => setSuccessMessage("")} style={submitStyle}>
               Close
             </button>
           </div>
         </div>
       )}
 
-      {/* Error Modal */}
-      {errorModalOpen && (
-        <div
-          role="alertdialog"
-          aria-modal="true"
-          tabIndex={-1}
-          onClick={() => setErrorModalOpen(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            backgroundColor: "rgba(0,0,0,0.3)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1200,
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              backgroundColor: "white",
-              padding: 30,
-              borderRadius: 8,
-              maxWidth: 400,
-              textAlign: "center",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-            }}
-          >
+      {errorMessage && (
+        <div style={modalStyle} onClick={() => setErrorMessage("")}>
+          <div style={alertBoxStyle}>
             <h3 style={{ color: "#e53935", marginBottom: 20 }}>Error!</h3>
             <p>{errorMessage}</p>
-            <button
-              onClick={() => setErrorModalOpen(false)}
-              style={{
-                marginTop: 20,
-                backgroundColor: "#3C51A1",
-                color: "white",
-                padding: "10px 20px",
-                border: "none",
-                borderRadius: 5,
-                cursor: "pointer",
-                fontSize: 16,
-              }}
-            >
+            <button onClick={() => setErrorMessage("")} style={cancelStyle}>
               Close
             </button>
           </div>

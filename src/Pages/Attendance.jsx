@@ -29,17 +29,17 @@ const Attendance = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState({ name: "", checkIn: "", checkOut: "" });
   const [editingId, setEditingId] = useState(null);
-  // const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDayOffset, setSelectedDayOffset] = useState(0);
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
 
   useEffect(() => {
     fetchUsers();
-    fetchTodayAttendance();
   }, []);
 
   useEffect(() => {
-    fetchTodayAttendance();
-  }, [selectedDayOffset]);
+    fetchAttendanceByDate();
+  }, [selectedDate]);
 
   const fetchUsers = async () => {
     const snapshot = await getDocs(collection(db, "users"));
@@ -47,9 +47,8 @@ const Attendance = () => {
     setUsers(names);
   };
 
-  const fetchTodayAttendance = async () => {
-    const targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() - selectedDayOffset);
+  const fetchAttendanceByDate = async () => {
+    const targetDate = new Date(selectedDate);
     targetDate.setHours(0, 0, 0, 0);
     const dayStart = Timestamp.fromDate(targetDate);
     const dayEnd = Timestamp.fromDate(
@@ -93,7 +92,7 @@ const Attendance = () => {
       name: form.name,
       checkIn: form.checkIn,
       checkOut: form.checkOut || "",
-      timestamp: Timestamp.fromDate(new Date()),
+      timestamp: Timestamp.fromDate(new Date(selectedDate)),
     };
 
     if (editingId) {
@@ -103,14 +102,14 @@ const Attendance = () => {
     }
 
     setModalOpen(false);
-    fetchTodayAttendance();
+    fetchAttendanceByDate();
   };
 
   const chartData = {
     labels: users,
     datasets: [
       {
-        label: "Attendance Today",
+        label: "Attendance",
         data: users.map(
           (name) =>
             attendance.filter((a) => a.name === name && a.checkIn).length
@@ -137,9 +136,8 @@ const Attendance = () => {
         }}
       >
         <h2 style={{ color: "#3C51A1" }}>
-          <FaCalendarAlt style={{ marginRight: 8 }} />
-          Attendance for{" "}
-          {new Date(Date.now() - selectedDayOffset * 86400000).toDateString()}
+          <FaCalendarAlt style={{ marginRight: 8 }} /> Attendance for{" "}
+          {new Date(selectedDate).toDateString()}
         </h2>
         <button
           onClick={openModal}
@@ -156,10 +154,28 @@ const Attendance = () => {
         </button>
       </div>
 
+      {/* Date Filter */}
+      <div style={{ marginBottom: 20 }}>
+        <label style={{ fontWeight: "bold", marginRight: 10 }}>
+          Filter by Date:
+        </label>
+        <input
+          type="date"
+          value={selectedDate}
+          onChange={(e) => setSelectedDate(e.target.value)}
+          style={{
+            padding: 10,
+            fontSize: 16,
+            borderRadius: 5,
+            border: "1px solid #ccc",
+          }}
+        />
+      </div>
+
       {/* Table */}
       <div style={{ overflowX: "auto", background: "white", borderRadius: 8 }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead style={{ backgroundColor: "#3C51A1", color: "#fff" }}>
+          <thead style={{ backgroundColor: "#88C244", color: "#fff" }}>
             <tr>
               <th style={{ padding: 12, border: "1px solid #ddd" }}>Name</th>
               <th style={{ padding: 12, border: "1px solid #ddd" }}>
@@ -205,33 +221,9 @@ const Attendance = () => {
         </table>
       </div>
 
-      {/* Pagination */}
-      <div
-        style={{ marginTop: 20, display: "flex", gap: 10, flexWrap: "wrap" }}
-      >
-        {[...Array(7)].map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setSelectedDayOffset(i)}
-            style={{
-              backgroundColor: selectedDayOffset === i ? "#3C51A1" : "#fff",
-              color: selectedDayOffset === i ? "#fff" : "#3C51A1",
-              border: "1px solid #3C51A1",
-              borderRadius: 5,
-              padding: "6px 12px",
-              cursor: "pointer",
-            }}
-          >
-            {i === 0 ? "Today" : `${i} day${i > 1 ? "s" : ""} ago`}
-          </button>
-        ))}
-      </div>
-
       {/* Chart */}
       <div style={{ marginTop: 40 }}>
-        <h4 style={{ color: "#3C51A1", marginBottom: 10 }}>
-          Today's Attendance Chart
-        </h4>
+        <h4 style={{ color: "#3C51A1", marginBottom: 10 }}>Attendance Chart</h4>
         <Bar data={chartData} />
       </div>
 
