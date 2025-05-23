@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FaUserInjured, FaCapsules, FaPlus } from "react-icons/fa";
 import logo from "../assets/logo.jpg";
 import "bootstrap/dist/css/bootstrap.min.css";
-import PatientDetails from "./PatientDetails";
+import OutPatient5 from "../MorePages/OutPatient5";
 import PharmacyInventory from "./PharmacyInventory";
 import NewSale from "../MorePages/NewSale";
 
@@ -14,7 +14,7 @@ const Pharmacy = () => {
       case "newsale":
         return <NewSale />;
       case "patients":
-        return <PatientDetails />;
+        return <OutPatient5 />;
       case "inventory":
         return <PharmacyInventory />;
       default:

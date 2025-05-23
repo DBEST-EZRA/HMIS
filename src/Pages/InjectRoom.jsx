@@ -1,10 +1,10 @@
 import React from "react";
-import OutPatient3 from "../MorePages/Outpatient3";
+import OutPatient5 from "../MorePages/OutPatient5";
 
 const InjectRoom = () => {
   return (
     <div>
-      <OutPatient3 />
+      <OutPatient5 />
     </div>
   );
 };
