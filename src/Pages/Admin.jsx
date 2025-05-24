@@ -24,7 +24,7 @@ import WardRecords from "./WardRecords";
 import Departments from "./Departments";
 import Shifts from "./Shifts";
 import BloodBank from "./BloodBank";
-import BillList from "./BillList";
+import OutPatient6 from "../MorePages/OutPatient6";
 import Attendance from "./Attendance";
 import NewSale from "../MorePages/NewSale";
 
@@ -39,7 +39,7 @@ const tabComponents = {
   departments: Departments,
   shifts: Shifts,
   bloodBank: BloodBank,
-  billList: BillList,
+  billList: OutPatient6,
   attendance: Attendance,
 };
 

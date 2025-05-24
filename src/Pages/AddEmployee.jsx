@@ -10,8 +10,8 @@ import {
   doc,
 } from "firebase/firestore";
 
-import jsPDF from "jspdf";
-import "jspdf-autotable";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 const roles = [
   "lab",
@@ -207,41 +207,33 @@ const AddEmployee = () => {
     }
   };
 
-  // PDF download handler
-  const downloadPdf = () => {
-    const doc = new jsPDF();
-    doc.setFontSize(18);
-    doc.text("Employees", 14, 22);
-    const tableColumn = [
-      "Name",
-      "Email",
-      "Role",
-      "Qualification",
-      "Specialization",
-      "Salary",
-    ];
-    const tableRows = [];
+  // Export to Excel handler
+  const exportToExcel = () => {
+    if (employees.length === 0) {
+      alert("No employees to export");
+      return;
+    }
 
-    employees.forEach((emp) => {
-      const empData = [
-        emp.name || "-",
-        emp.email || "-",
-        emp.role || "-",
-        emp.qualification || "-",
-        emp.specialization || "-",
-        emp.salary ? emp.salary.toString() : "-",
-      ];
-      tableRows.push(empData);
-    });
+    const dataToExport = employees.map((emp) => ({
+      Name: emp.name || "-",
+      Email: emp.email || "-",
+      Role: emp.role || "-",
+      Qualification: emp.qualification || "-",
+      Specialization: emp.specialization || "-",
+      Salary: emp.salary ? emp.salary.toString() : "-",
+    }));
 
-    doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 30,
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [136, 194, 68] }, // lime color #88C244
-    });
-    doc.save("employees.pdf");
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
+
+    const wbout = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([wbout], { type: "application/octet-stream" });
+
+    saveAs(
+      blob,
+      `employees_export_${new Date().toISOString().slice(0, 10)}.xlsx`
+    );
   };
 
   return (
@@ -279,9 +271,9 @@ const AddEmployee = () => {
           : "Add Employee"}
       </button>
 
-      {/* Download PDF button */}
+      {/* Export to Excel button */}
       <button
-        onClick={downloadPdf}
+        onClick={exportToExcel}
         style={{
           marginBottom: 15,
           backgroundColor: "#3C51A1",
@@ -292,9 +284,9 @@ const AddEmployee = () => {
           border: "none",
           cursor: "pointer",
         }}
-        aria-label="Download employees table as PDF"
+        aria-label="Export employees table to Excel"
       >
-        Download PDF
+        Export to Excel
       </button>
 
       {/* Collapsible Form */}
