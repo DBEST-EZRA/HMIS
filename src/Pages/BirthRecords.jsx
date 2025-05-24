@@ -10,6 +10,9 @@ import {
 } from "firebase/firestore";
 import { FaEdit, FaTrash, FaSearch } from "react-icons/fa";
 
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+
 const BirthRecords = () => {
   const [births, setPatients] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -167,6 +170,34 @@ const BirthRecords = () => {
     setModalLoading(false);
   };
 
+  // Export to Excel function
+  const exportToExcel = () => {
+    if (filteredPatients.length === 0) {
+      alert("No records to export");
+      return;
+    }
+
+    // Prepare data for export
+    const dataToExport = filteredPatients.map((p) => ({
+      "Child Name": p.childName || "",
+      "Father's Name": p.fathersName || "",
+      "Mother's Name": p.mothersName || "",
+      "Birth Weight (kg)": p.birthWeight || "",
+      "Birth Date": p.birthDate || "",
+      "ID Number": p.idNumber || "",
+      Phone: p.phone || "",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "BirthRecords");
+
+    const wbout = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([wbout], { type: "application/octet-stream" });
+
+    saveAs(blob, `birth_records_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
+
   return (
     <div
       style={{
@@ -178,7 +209,6 @@ const BirthRecords = () => {
         flexDirection: "column",
       }}
     >
-      {/* <h1 style={{ color: "#3C51A1", marginBottom: 20 }}>Manage Patients</h1> */}
       {/* Filter Date */}
       <div style={{ marginBottom: 15 }}>
         <label style={{ fontWeight: "bold", color: "#3C51A1" }}>
@@ -196,7 +226,8 @@ const BirthRecords = () => {
           }}
         />
       </div>
-      {/* Search and Add */}
+
+      {/* Search, Add, Export */}
       <div
         style={{
           display: "flex",
@@ -249,9 +280,25 @@ const BirthRecords = () => {
             fontSize: 16,
             cursor: "pointer",
           }}
-          aria-label="Add patient"
+          aria-label="Add birth record"
         >
           Add Birth
+        </button>
+
+        <button
+          onClick={exportToExcel}
+          style={{
+            backgroundColor: "#3C51A1",
+            color: "white",
+            border: "none",
+            borderRadius: 5,
+            padding: "10px 20px",
+            fontSize: 16,
+            cursor: "pointer",
+          }}
+          aria-label="Export birth records to Excel"
+        >
+          Export to Excel
         </button>
       </div>
 
@@ -313,13 +360,13 @@ const BirthRecords = () => {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={5} style={{ textAlign: "center", padding: 20 }}>
+                <td colSpan={8} style={{ textAlign: "center", padding: 20 }}>
                   Loading...
                 </td>
               </tr>
             ) : filteredPatients.length === 0 ? (
               <tr>
-                <td colSpan={5} style={{ textAlign: "center", padding: 20 }}>
+                <td colSpan={8} style={{ textAlign: "center", padding: 20 }}>
                   No patients found
                 </td>
               </tr>
@@ -345,7 +392,7 @@ const BirthRecords = () => {
                   >
                     <button
                       onClick={() => openEditModal(patient)}
-                      aria-label={`Edit patient ${patient.fullName}`}
+                      aria-label={`Edit patient ${patient.childName}`}
                       title="Edit"
                       style={{
                         background: "none",
@@ -358,7 +405,7 @@ const BirthRecords = () => {
                     </button>
                     <button
                       onClick={() => handleDelete(patient.id)}
-                      aria-label={`Delete patient ${patient.fullName}`}
+                      aria-label={`Delete patient ${patient.childName}`}
                       title="Delete"
                       style={{
                         background: "none",
@@ -419,6 +466,8 @@ const BirthRecords = () => {
               onSubmit={handleSubmit}
               style={{ display: "flex", flexDirection: "column", gap: 15 }}
             >
+              {/* form inputs */}
+              {/* ... your existing form inputs ... */}
               <label style={{ fontWeight: "bold" }}>
                 Child Name <span style={{ color: "red" }}>*</span>
                 <input
@@ -438,7 +487,7 @@ const BirthRecords = () => {
                   autoFocus
                 />
               </label>
-
+              {/* ... rest of form inputs as you had them ... */}
               <label style={{ fontWeight: "bold" }}>
                 Fathers Name <span style={{ color: "red" }}>*</span>
                 <input
@@ -458,7 +507,6 @@ const BirthRecords = () => {
                   autoFocus
                 />
               </label>
-
               <label style={{ fontWeight: "bold" }}>
                 Mothers Name <span style={{ color: "red" }}>*</span>
                 <input
@@ -478,7 +526,6 @@ const BirthRecords = () => {
                   autoFocus
                 />
               </label>
-
               <label style={{ fontWeight: "bold" }}>
                 Birth Weight <span style={{ color: "red" }}>*</span>
                 <input
@@ -498,7 +545,6 @@ const BirthRecords = () => {
                   autoFocus
                 />
               </label>
-
               <label style={{ fontWeight: "bold" }}>
                 Birth Date <span style={{ color: "red" }}>*</span>
                 <input
@@ -518,7 +564,6 @@ const BirthRecords = () => {
                   autoFocus
                 />
               </label>
-
               <label style={{ fontWeight: "bold" }}>
                 ID Number <span style={{ color: "red" }}>*</span>
                 <input
@@ -537,7 +582,6 @@ const BirthRecords = () => {
                   }}
                 />
               </label>
-
               <label style={{ fontWeight: "bold" }}>
                 Phone <span style={{ color: "red" }}>*</span>
                 <input

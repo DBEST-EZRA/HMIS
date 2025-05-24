@@ -14,7 +14,7 @@ dist-ssr
 
 
 # Ignore Firebase config file
-/src/Configuration/Config.js
+# /src/Configuration/Config.js
 
 
 # Editor directories and files
