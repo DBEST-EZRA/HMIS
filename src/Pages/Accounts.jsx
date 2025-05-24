@@ -1,87 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   FaFileInvoiceDollar,
   FaMoneyBillWave,
   FaMoneyCheckAlt,
-  FaEdit,
 } from "react-icons/fa";
 import logo from "../assets/logo.jpg";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const dummyAccountsData = {
-  paid: [
-    {
-      id: "AC001",
-      patient: "Tony Stark",
-      summary: "X-Ray, Consultation",
-      total: 3000,
-      paymentMethod: "mpesa",
-      description: "",
-    },
-  ],
-  unpaid: [
-    {
-      id: "AC002",
-      patient: "Steve Rogers",
-      summary: "Surgery, Medication",
-      total: 12000,
-      paymentMethod: "multiple",
-      description: "5000 cash, 7000 sha",
-    },
-  ],
-};
+// Import your real components here
+import OutPatient6 from "../MorePages/OutPatient6";
+import NewSale from "../MorePages/NewSale";
 
 const Accounts = () => {
   const [activeTab, setActiveTab] = useState("paid");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filteredData, setFilteredData] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [selectedRecord, setSelectedRecord] = useState(null);
-  const [formFields, setFormFields] = useState({
-    summary: "",
-    total: 0,
-    paymentMethod: "",
-    description: "",
-  });
-
-  useEffect(() => {
-    const data = dummyAccountsData[activeTab] || [];
-    setFilteredData(
-      searchTerm.trim()
-        ? data.filter(
-            (item) =>
-              item.patient.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              item.id.toLowerCase().includes(searchTerm.toLowerCase())
-          )
-        : data
-    );
-  }, [activeTab, searchTerm]);
-
-  const openModal = (record) => {
-    setSelectedRecord(record);
-    setFormFields({
-      summary: record.summary,
-      total: record.total,
-      paymentMethod: record.paymentMethod,
-      description: record.description || "",
-    });
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-    setSelectedRecord(null);
-  };
-
-  const handleFormChange = (e) => {
-    const { name, value } = e.target;
-    setFormFields({ ...formFields, [name]: value });
-  };
-
-  const handleSave = () => {
-    alert("Billing record updated (dummy)!");
-    closeModal();
-  };
 
   return (
     <div className="d-flex vh-100 bg-light">
@@ -108,22 +39,24 @@ const Accounts = () => {
 
           <nav className="nav flex-column">
             <button
-              className={`nav-link btn btn-link text-white px-1 ${
-                activeTab === "paid" ? "fw-bold" : ""
+              className={`d-flex align-items-center nav-link btn btn-link text-white px-2 py-2 rounded ${
+                activeTab === "paid" ? "fw-bold bg-white bg-opacity-10" : ""
               }`}
               onClick={() => setActiveTab("paid")}
+              style={{ gap: "8px" }}
             >
-              <FaMoneyBillWave className="me-2" />
-              <span className="d-none d-sm-inline">Paid</span>
+              <FaMoneyBillWave size={18} />
+              <span className="d-none d-sm-inline">Patient Bills</span>
             </button>
             <button
-              className={`nav-link btn btn-link text-white px-1 ${
-                activeTab === "unpaid" ? "fw-bold" : ""
+              className={`d-flex align-items-center nav-link btn btn-link text-white px-2 py-2 rounded ${
+                activeTab === "unpaid" ? "fw-bold bg-white bg-opacity-10" : ""
               }`}
               onClick={() => setActiveTab("unpaid")}
+              style={{ gap: "8px" }}
             >
-              <FaMoneyCheckAlt className="me-2" />
-              <span className="d-none d-sm-inline">Unpaid</span>
+              <FaMoneyCheckAlt size={18} />
+              <span className="d-none d-sm-inline">Pharmacy Sales</span>
             </button>
           </nav>
         </div>
@@ -144,8 +77,8 @@ const Accounts = () => {
           >
             <div className="card-body">
               <FaMoneyBillWave size={28} />
-              <h5 className="card-title mt-2">Paid</h5>
-              <p className="card-text fs-4">{dummyAccountsData.paid.length}</p>
+              <h5 className="card-title mt-2">Patient Bills</h5>
+              <p className="card-text fs-4">{}</p>
             </div>
           </div>
 
@@ -155,10 +88,8 @@ const Accounts = () => {
           >
             <div className="card-body">
               <FaMoneyCheckAlt size={28} />
-              <h5 className="card-title mt-2">Unpaid</h5>
-              <p className="card-text fs-4">
-                {dummyAccountsData.unpaid.length}
-              </p>
+              <h5 className="card-title mt-2">Pharmacy Sales</h5>
+              <p className="card-text fs-4">{}</p>
             </div>
           </div>
 
@@ -169,156 +100,13 @@ const Accounts = () => {
             <div className="card-body">
               <FaFileInvoiceDollar size={28} />
               <h5 className="card-title mt-2">Total Invoices</h5>
-              <p className="card-text fs-4">
-                {dummyAccountsData.paid.length +
-                  dummyAccountsData.unpaid.length}
-              </p>
+              <p className="card-text fs-4">{}</p>
             </div>
           </div>
         </div>
 
-        <input
-          type="search"
-          placeholder="Search patients..."
-          className="form-control w-auto mb-3"
-          style={{ minWidth: 200 }}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-
-        <div className="table-responsive">
-          <table className="table table-bordered table-hover align-middle">
-            <thead style={{ backgroundColor: "#3c51a1", color: "#fff" }}>
-              <tr>
-                <th>Patient</th>
-                <th>ID</th>
-                <th>Summary</th>
-                <th>Total (KES)</th>
-                <th>Payment Method</th>
-                <th>Description</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.length === 0 ? (
-                <tr>
-                  <td colSpan="7" className="text-center text-muted">
-                    No billing records found.
-                  </td>
-                </tr>
-              ) : (
-                filteredData.map((rec, idx) => (
-                  <tr key={idx}>
-                    <td>{rec.patient}</td>
-                    <td>{rec.id}</td>
-                    <td>{rec.summary}</td>
-                    <td>{rec.total}</td>
-                    <td>{rec.paymentMethod}</td>
-                    <td>
-                      {rec.paymentMethod === "multiple" ? rec.description : "-"}
-                    </td>
-                    <td>
-                      <button
-                        className="btn btn-sm"
-                        style={{ backgroundColor: "#88c244", color: "#fff" }}
-                        onClick={() => openModal(rec)}
-                      >
-                        <FaEdit />
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Modal */}
-        {showModal && (
-          <div
-            className="modal d-block"
-            tabIndex="-1"
-            style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-          >
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <div
-                  className="modal-header"
-                  style={{ backgroundColor: "#3c51a1", color: "#fff" }}
-                >
-                  <h5 className="modal-title">Edit Billing Record</h5>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    onClick={closeModal}
-                  ></button>
-                </div>
-                <div className="modal-body">
-                  <div className="mb-3">
-                    <label className="form-label">Bill Summary</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="summary"
-                      value={formFields.summary}
-                      onChange={handleFormChange}
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">Total (KES)</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      name="total"
-                      value={formFields.total}
-                      onChange={handleFormChange}
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">Payment Method</label>
-                    <select
-                      className="form-select"
-                      name="paymentMethod"
-                      value={formFields.paymentMethod}
-                      onChange={handleFormChange}
-                    >
-                      <option value="">Select...</option>
-                      <option value="cash">Cash</option>
-                      <option value="mpesa">MPESA</option>
-                      <option value="sha">SHA</option>
-                      <option value="multiple">Multiple</option>
-                    </select>
-                  </div>
-                  {formFields.paymentMethod === "multiple" && (
-                    <div className="mb-3">
-                      <label className="form-label">Description</label>
-                      <textarea
-                        className="form-control"
-                        name="description"
-                        rows="3"
-                        value={formFields.description}
-                        onChange={handleFormChange}
-                        placeholder="E.g. 2000 mpesa, 1000 cash"
-                      />
-                    </div>
-                  )}
-                </div>
-                <div className="modal-footer">
-                  <button className="btn btn-secondary" onClick={closeModal}>
-                    Cancel
-                  </button>
-                  <button
-                    className="btn"
-                    style={{ backgroundColor: "#3c51a1", color: "#fff" }}
-                    onClick={handleSave}
-                  >
-                    Save Changes
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Dynamically render component based on activeTab */}
+        {activeTab === "paid" ? <OutPatient6 /> : <NewSale />}
       </main>
     </div>
   );
