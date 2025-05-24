@@ -46,7 +46,7 @@ const Accounts = () => {
               style={{ gap: "8px" }}
             >
               <FaMoneyBillWave size={18} />
-              <span className="d-none d-sm-inline">Patient Bills</span>
+              <span className="d-none d-sm-inline">OutPatient Bills</span>
             </button>
             <button
               className={`d-flex align-items-center nav-link btn btn-link text-white px-2 py-2 rounded ${

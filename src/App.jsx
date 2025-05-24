@@ -13,6 +13,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import PatientDetails from "./Pages/PatientDetails";
 import PharmacyInventory from "./Pages/PharmacyInventory";
 import InjectRoom from "./Pages/InjectRoom";
+import ViewMore from "./MorePages/ViewMore";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/patient-details" element={<PatientDetails />} />
         <Route path="/pharmacy-inventory" element={<PharmacyInventory />} />
         <Route path="/inject-room" element={<InjectRoom />} />
+        <Route path="/viewmore/:id" element={<ViewMore />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

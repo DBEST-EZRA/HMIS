@@ -10,6 +10,9 @@ import {
 } from "firebase/firestore";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { Bar } from "react-chartjs-2";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import { useNavigate } from "react-router-dom";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -29,10 +32,17 @@ ChartJS.register(
   Legend
 );
 
+const generateInpatientNumber = () => `IP-${Date.now()}`;
+
 const WardRecords = () => {
   const [records, setRecords] = useState([]);
   const [form, setForm] = useState({
-    patient: "",
+    patientName: "",
+    phone: "",
+    idNumber: "",
+    age: "",
+    sex: "",
+    inpatientNumber: "",
     reason: "",
     admissionDate: "",
     dischargeDate: "",
@@ -41,6 +51,7 @@ const WardRecords = () => {
   const [editingId, setEditingId] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [filterDate, setFilterDate] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchRecords();
@@ -59,7 +70,12 @@ const WardRecords = () => {
       setEditingId(record.id);
     } else {
       setForm({
-        patient: "",
+        patientName: "",
+        phone: "",
+        idNumber: "",
+        age: "",
+        sex: "",
+        inpatientNumber: generateInpatientNumber(),
         reason: "",
         admissionDate: "",
         dischargeDate: "",
@@ -96,12 +112,36 @@ const WardRecords = () => {
     }
   };
 
+  const handleExport = () => {
+    const data = records.map((r) => ({
+      "Inpatient No": r.inpatientNumber,
+      "Patient Name": r.patientName,
+      Phone: r.phone,
+      "ID Number": r.idNumber,
+      Age: r.age,
+      Sex: r.sex,
+      Reason: r.reason,
+      "Admission Date": r.admissionDate,
+      "Discharge Date": r.dischargeDate,
+      Charges: r.charges,
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Ward Records");
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(blob, `ward_records_${new Date().toISOString().split("T")[0]}.xlsx`);
+  };
+
   const filteredRecords = filterDate
     ? records.filter((r) => r.admissionDate === filterDate)
     : records;
 
   const chartData = {
-    labels: filteredRecords.map((r) => r.patient),
+    labels: filteredRecords.map((r) => r.patientName),
     datasets: [
       {
         label: "Ward Charges",
@@ -117,18 +157,26 @@ const WardRecords = () => {
     >
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 style={{ color: "#3C51A1" }}>Ward Records</h2>
-        <button
-          onClick={() => openModal()}
-          style={{
-            backgroundColor: "#88C244",
-            color: "white",
-            border: "none",
-            padding: "10px 20px",
-            borderRadius: 5,
-          }}
-        >
-          + Add Record
-        </button>
+        <div>
+          <button
+            onClick={handleExport}
+            className="btn btn-outline-primary me-2"
+          >
+            Export to Excel
+          </button>
+          <button
+            onClick={() => openModal()}
+            style={{
+              backgroundColor: "#88C244",
+              color: "white",
+              border: "none",
+              padding: "10px 20px",
+              borderRadius: 5,
+            }}
+          >
+            + Add Record
+          </button>
+        </div>
       </div>
 
       <div className="mb-3">
@@ -161,8 +209,10 @@ const WardRecords = () => {
         <table className="table table-bordered">
           <thead style={{ backgroundColor: "#3C51A1", color: "white" }}>
             <tr>
-              <th>Patient </th>
-              <th>Reason</th>
+              <th>Inpatient No</th>
+              <th>Patient</th>
+              <th>Phone</th>
+              <th>ID Number</th>
               <th>Admission Date</th>
               <th>Discharge Date</th>
               <th>Charges</th>
@@ -172,23 +222,38 @@ const WardRecords = () => {
           <tbody>
             {filteredRecords.map((rec) => (
               <tr key={rec.id}>
+                <td>{rec.inpatientNumber}</td>
                 <td>{rec.patientName}</td>
-                <td>{rec.reason}</td>
+                <td>{rec.phone}</td>
+                <td>{rec.idNumber}</td>
                 <td>{rec.admissionDate}</td>
                 <td>{rec.dischargeDate}</td>
                 <td>{rec.charges}</td>
                 <td>
                   <button
                     onClick={() => openModal(rec)}
-                    className="btn btn-sm text-primary"
+                    className="btn btn-sm text-primary me-2"
                   >
                     <FaEdit />
                   </button>
                   <button
                     onClick={() => handleDelete(rec.id)}
-                    className="btn btn-sm text-danger"
+                    className="btn btn-sm text-danger me-2"
                   >
                     <FaTrash />
+                  </button>
+                  <button
+                    className="btn btn-sm btn-info"
+                    onClick={() =>
+                      navigate(`/viewmore/${rec.id}`, {
+                        state: {
+                          patientName: rec.patientName,
+                          inpatientNumber: rec.inpatientNumber,
+                        },
+                      })
+                    }
+                  >
+                    View More
                   </button>
                 </td>
               </tr>
@@ -230,6 +295,46 @@ const WardRecords = () => {
                       onChange={handleChange}
                       required
                     />
+                  </div>
+                  <div className="mb-3">
+                    <label>Phone</label>
+                    <input
+                      className="form-control"
+                      name="phone"
+                      value={form.phone}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label>ID Number</label>
+                    <input
+                      className="form-control"
+                      name="idNumber"
+                      value={form.idNumber}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label>Age</label>
+                    <input
+                      className="form-control"
+                      name="age"
+                      value={form.age}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label>Sex</label>
+                    <select
+                      className="form-control"
+                      name="sex"
+                      value={form.sex}
+                      onChange={handleChange}
+                    >
+                      <option value="">Select</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                    </select>
                   </div>
                   <div className="mb-3">
                     <label>Reason</label>
