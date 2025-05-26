@@ -17,6 +17,7 @@ const roles = [
   "lab",
   "clinical officer",
   "doctor",
+  "pharmacy",
   "nurse",
   "dentist",
   "accountant",

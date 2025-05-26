@@ -22,12 +22,12 @@ const Reception = () => {
   const [activeSection, setActiveSection] = useState("newPatients");
 
   const sidebarItems = [
-    { key: "newPatients", label: "New Patients", icon: <FaUserPlus /> },
-    { key: "pastPatients", label: "Past Patients", icon: <FaHistory /> },
+    { key: "newPatients", label: "New OutPatient", icon: <FaUserPlus /> },
+    { key: "pastPatients", label: "Past OutPatients", icon: <FaHistory /> },
     { key: "birthRecord", label: "Birth Record", icon: <FaBaby /> },
     { key: "attendance", label: "Attendance", icon: <FaCalendarCheck /> },
     { key: "ambulance", label: "Ambulance", icon: <FaAmbulance /> },
-    { key: "ward", label: "Ward", icon: <FaProcedures /> },
+    { key: "ward", label: "Inpatient", icon: <FaProcedures /> },
   ];
 
   // Function to render the active section component

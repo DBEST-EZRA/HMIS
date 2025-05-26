@@ -14,12 +14,18 @@ import PatientDetails from "./Pages/PatientDetails";
 import PharmacyInventory from "./Pages/PharmacyInventory";
 import InjectRoom from "./Pages/InjectRoom";
 import ViewMore from "./MorePages/ViewMore";
+import Admin from "./Pages/Admin";
+import Clinician from "./Pages/Clinician";
+import Reception from "./Pages/Reception";
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/clinician" element={<Clinician />} />
+        <Route path="/reception" element={<Reception />} />
         <Route path="/add-employee" element={<AddEmployee />} />
         <Route path="/patient-details" element={<PatientDetails />} />
         <Route path="/pharmacy-inventory" element={<PharmacyInventory />} />
