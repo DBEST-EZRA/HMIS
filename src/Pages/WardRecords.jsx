@@ -192,19 +192,6 @@ const WardRecords = () => {
         />
       </div>
 
-      <div className="mb-4">
-        <Bar
-          data={chartData}
-          options={{
-            responsive: true,
-            plugins: {
-              legend: { display: false },
-              title: { display: true, text: "Ward Charges per Patient" },
-            },
-          }}
-        />
-      </div>
-
       <div className="table-responsive">
         <table className="table table-bordered">
           <thead style={{ backgroundColor: "#3C51A1", color: "white" }}>
@@ -214,6 +201,8 @@ const WardRecords = () => {
               <th>Phone</th>
               <th>ID Number</th>
               <th>Admission Date</th>
+              <th>Room Number</th>
+              <th>Bed Number</th>
               <th>Discharge Date</th>
               <th>Charges</th>
               <th>Actions</th>
@@ -227,6 +216,8 @@ const WardRecords = () => {
                 <td>{rec.phone}</td>
                 <td>{rec.idNumber}</td>
                 <td>{rec.admissionDate}</td>
+                <td>{rec.roomNumber}</td>
+                <td>{rec.bedNumber}</td>
                 <td>{rec.dischargeDate}</td>
                 <td>{rec.charges}</td>
                 <td>
@@ -260,6 +251,19 @@ const WardRecords = () => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="mb-4">
+        <Bar
+          data={chartData}
+          options={{
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+              title: { display: true, text: "Ward Charges per Patient" },
+            },
+          }}
+        />
       </div>
 
       {modalOpen && (
@@ -353,6 +357,26 @@ const WardRecords = () => {
                       className="form-control"
                       name="admissionDate"
                       value={form.admissionDate}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label>Room Number</label>
+                    <input
+                      className="form-control"
+                      name="roomNumber"
+                      value={form.roomNumber}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label>Bed Number</label>
+                    <input
+                      className="form-control"
+                      name="bedNumber"
+                      value={form.bedNumber}
                       onChange={handleChange}
                       required
                     />
