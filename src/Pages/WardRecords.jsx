@@ -234,7 +234,12 @@ const WardRecords = () => {
                     <FaTrash />
                   </button>
                   <button
-                    className="btn btn-sm btn-info"
+                    className="btn btn-sm"
+                    style={{
+                      backgroundColor: "#88c244",
+                      color: "#fff",
+                      border: "none",
+                    }}
                     onClick={() =>
                       navigate(`/viewmore/${rec.id}`, {
                         state: {

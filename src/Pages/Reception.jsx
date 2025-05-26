@@ -53,7 +53,10 @@ const Reception = () => {
   return (
     <div className="vh-100 d-flex">
       {/* Sidebar */}
-      <div className="bg-white border-end p-3" style={{ width: "240px" }}>
+      <div
+        className="border-end p-3"
+        style={{ width: "240px", backgroundColor: "#3c51a1" }}
+      >
         <img
           src={logo}
           alt="Minto Logo"
@@ -69,9 +72,8 @@ const Reception = () => {
                 cursor: "pointer",
                 padding: "10px",
                 borderRadius: "5px",
-                backgroundColor:
-                  activeSection === key ? "#3C51A1" : "transparent",
-                color: activeSection === key ? "white" : "#3C51A1",
+                backgroundColor: "#88c244",
+                color: activeSection === key ? "#88c244" : "#fff",
                 display: "flex",
                 alignItems: "center",
                 gap: "10px",
