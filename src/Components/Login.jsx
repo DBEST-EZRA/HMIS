@@ -10,20 +10,8 @@ import {
 } from "firebase/auth";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
-// Pages
-import Laboratory from "../Pages/Laboratory";
-import Clinician from "../Pages/Clinician";
-import Reception from "../Pages/Reception";
-import Admin from "../Pages/Admin";
-import Pharmacy from "../Pages/Pharmacy";
-import Xray from "../Pages/Xray";
-import Accounts from "../Pages/Accounts";
-import Emergency from "../Pages/Emergency";
-import Nurse from "../Pages/Nurse";
-import Doctor from "../Pages/Doctor";
-
 const Login = () => {
-  const [username, setUsername] = useState(""); // Email
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -89,29 +77,48 @@ const Login = () => {
         case "admin":
           navigate("/admin");
           break;
-        //to be handled
-        case "lab":
-          navigate("/lab");
-          break;
         case "pharmacy":
           navigate("/pharmacy");
           break;
-
-        case "xray":
-          navigate("/xray");
-          break;
-        case "accounts":
-          navigate("/accounts");
-          break;
-        case "emergency":
-          navigate("/emergency");
-          break;
-        case "nurse":
-          navigate("/nurse");
+        case "lab":
+          navigate("/lab");
           break;
         case "doctor":
           navigate("/doctor");
           break;
+        case "nurse":
+          navigate("/nurse");
+          break;
+        case "accountant":
+          navigate("/accounts");
+          break;
+
+        //to be handled
+
+        case "xray":
+          navigate("/xray");
+          break;
+
+        case "dentist":
+          navigate("/dentist");
+          break;
+
+        case "emergency":
+          navigate("/emergency");
+          break;
+
+        case "security":
+          navigate("/security");
+          break;
+
+        case "cleaner":
+          navigate("/cleaner");
+          break;
+
+        case "physiotherapist":
+          navigate("/physiotherapist");
+          break;
+
         default:
           console.error("Unknown role:", role);
           break;

@@ -17,6 +17,11 @@ import ViewMore from "./MorePages/ViewMore";
 import Admin from "./Pages/Admin";
 import Clinician from "./Pages/Clinician";
 import Reception from "./Pages/Reception";
+import Pharmacy from "./Pages/Pharmacy";
+import Laboratory from "./Pages/Laboratory";
+import Doctor from "./Pages/Doctor";
+import Nurse from "./Pages/Nurse";
+import Accounts from "./Pages/Accounts";
 
 function App() {
   return (
@@ -26,6 +31,12 @@ function App() {
         <Route path="/admin" element={<Admin />} />
         <Route path="/clinician" element={<Clinician />} />
         <Route path="/reception" element={<Reception />} />
+        <Route path="/pharmacy" element={<Pharmacy />} />
+        <Route path="/lab" element={<Laboratory />} />
+        <Route path="/doctor" element={<Doctor />} />
+        <Route path="/nurse" element={<Nurse />} />
+        <Route path="/accounts" element={<Accounts />} />
+
         <Route path="/add-employee" element={<AddEmployee />} />
         <Route path="/patient-details" element={<PatientDetails />} />
         <Route path="/pharmacy-inventory" element={<PharmacyInventory />} />
