@@ -10,9 +10,25 @@ import "bootstrap/dist/css/bootstrap.min.css";
 // Import your real components here
 import OutPatient6 from "../MorePages/OutPatient6";
 import NewSale from "../MorePages/NewSale";
+import WardRecords from "./WardRecords";
 
 const Accounts = () => {
   const [activeTab, setActiveTab] = useState("paid");
+
+  let renderedComponent;
+  switch (activeTab) {
+    case "paid":
+      renderedComponent = <OutPatient6 />;
+      break;
+    case "unpaid":
+      renderedComponent = <NewSale />;
+      break;
+    case "inPatient":
+      renderedComponent = <WardRecords />;
+      break;
+    default:
+      renderedComponent = <div>Select a valid tab</div>;
+  }
 
   return (
     <div className="d-flex vh-100 bg-light">
@@ -50,6 +66,18 @@ const Accounts = () => {
             </button>
             <button
               className={`d-flex align-items-center nav-link btn btn-link text-white px-2 py-2 rounded ${
+                activeTab === "inPatient"
+                  ? "fw-bold bg-white bg-opacity-10"
+                  : ""
+              }`}
+              onClick={() => setActiveTab("inPatient")}
+              style={{ gap: "8px" }}
+            >
+              <FaMoneyBillWave size={18} />
+              <span className="d-none d-sm-inline">InPatient Bills</span>
+            </button>
+            <button
+              className={`d-flex align-items-center nav-link btn btn-link text-white px-2 py-2 rounded ${
                 activeTab === "unpaid" ? "fw-bold bg-white bg-opacity-10" : ""
               }`}
               onClick={() => setActiveTab("unpaid")}
@@ -78,7 +106,7 @@ const Accounts = () => {
             <div className="card-body">
               <FaMoneyBillWave size={28} />
               <h5 className="card-title mt-2">Patient Bills</h5>
-              <p className="card-text fs-4">{}</p>
+              <p className="card-text fs-4">{/* Add total logic here */}</p>
             </div>
           </div>
 
@@ -89,7 +117,7 @@ const Accounts = () => {
             <div className="card-body">
               <FaMoneyCheckAlt size={28} />
               <h5 className="card-title mt-2">Pharmacy Sales</h5>
-              <p className="card-text fs-4">{}</p>
+              <p className="card-text fs-4">{/* Add total logic here */}</p>
             </div>
           </div>
 
@@ -100,13 +128,13 @@ const Accounts = () => {
             <div className="card-body">
               <FaFileInvoiceDollar size={28} />
               <h5 className="card-title mt-2">Total Invoices</h5>
-              <p className="card-text fs-4">{}</p>
+              <p className="card-text fs-4">{/* Add total logic here */}</p>
             </div>
           </div>
         </div>
 
         {/* Dynamically render component based on activeTab */}
-        {activeTab === "paid" ? <OutPatient6 /> : <NewSale />}
+        {renderedComponent}
       </main>
     </div>
   );
