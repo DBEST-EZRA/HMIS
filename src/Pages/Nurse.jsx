@@ -4,6 +4,8 @@ import logo from "../assets/logo.jpg";
 import "bootstrap/dist/css/bootstrap.min.css";
 import OutPatient1 from "../MorePages/OutPatient1";
 import Appointments from "./Appointments";
+import WardRecords from "./WardRecords";
+import PastPatients1 from "../MorePages/PastPatients1";
 
 const Nurse = () => {
   const [activeTab, setActiveTab] = useState("assignedPatients");
@@ -13,7 +15,9 @@ const Nurse = () => {
       case "assignedPatients":
         return <OutPatient1 />;
       case "pastPatients":
-        return <OutPatient1 />;
+        return <PastPatients1 />;
+      case "inPatients":
+        return <WardRecords />;
       case "appointments":
         return <Appointments />;
       default:
@@ -52,7 +56,7 @@ const Nurse = () => {
               onClick={() => setActiveTab("assignedPatients")}
             >
               <FaUserCheck className="me-2" />
-              <span className="d-none d-sm-inline">Assigned Patients</span>
+              <span className="d-none d-sm-inline">Assigned OutPatients</span>
             </button>
 
             <button
@@ -62,7 +66,16 @@ const Nurse = () => {
               onClick={() => setActiveTab("pastPatients")}
             >
               <FaHistory className="me-2" />
-              <span className="d-none d-sm-inline">Past Patients</span>
+              <span className="d-none d-sm-inline">Past OutPatients</span>
+            </button>
+            <button
+              className={`nav-link d-flex align-items-center text-white btn btn-link px-1 ${
+                activeTab === "inPatients" ? "fw-bold" : ""
+              }`}
+              onClick={() => setActiveTab("inPatients")}
+            >
+              <FaHistory className="me-2" />
+              <span className="d-none d-sm-inline">InPatients</span>
             </button>
 
             <button

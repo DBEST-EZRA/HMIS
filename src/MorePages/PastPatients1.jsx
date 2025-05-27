@@ -10,7 +10,7 @@ import {
 } from "firebase/firestore";
 import { FaEdit, FaSearch } from "react-icons/fa";
 
-const PastPatients2 = () => {
+const PastPatients1 = () => {
   const [patients, setPatients] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -44,7 +44,7 @@ const PastPatients2 = () => {
   const fetchPatients = async () => {
     const q = query(
       collection(db, "patients"),
-      where("assignee", "==", "Doctor1")
+      where("assignee", "==", "Nurse1")
     );
     const snapshot = await getDocs(q);
     const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
@@ -194,13 +194,13 @@ const PastPatients2 = () => {
               <th>Full Name</th>
               <th>ID Number</th>
               <th>Phone</th>
-              <th>Doctor Notes</th>
+              <th>Nurse Notes</th>
               <th>Recommended Test</th>
               <th>Test Result</th>
               <th>Signs & Symptoms</th>
               <th>Prescribed Drugs</th>
               <th>Prescribed Injection</th>
-              <th>Doctor Charges</th>
+              <th>Nursing Charges</th>
               <th>Consultation Fee</th>
               <th>Actions</th>
             </tr>
@@ -327,4 +327,4 @@ const PastPatients2 = () => {
   );
 };
 
-export default PastPatients2;
+export default PastPatients1;
