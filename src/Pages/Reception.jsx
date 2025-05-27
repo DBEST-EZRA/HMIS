@@ -64,33 +64,40 @@ const Reception = () => {
           style={{ height: "50px" }}
         />
         <ul className="list-unstyled">
-          {sidebarItems.map(({ key, label, icon }) => (
-            <li
-              key={key}
-              onClick={() => setActiveSection(key)}
-              style={{
-                cursor: "pointer",
-                padding: "10px",
-                borderRadius: "5px",
-                backgroundColor: "#88c244",
-                color: activeSection === key ? "#88c244" : "#fff",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                marginBottom: "5px",
-                transition: "background-color 0.3s",
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor = "#e7eaf9")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.backgroundColor =
-                  activeSection === key ? "#3C51A1" : "transparent")
-              }
-            >
-              {icon} {label}
-            </li>
-          ))}
+          {sidebarItems.map(({ key, label, icon }) => {
+            const isActive = activeSection === key;
+
+            return (
+              <li
+                key={key}
+                onClick={() => setActiveSection(key)}
+                style={{
+                  cursor: "pointer",
+                  padding: "10px",
+                  borderRadius: "5px",
+                  backgroundColor: isActive ? "#88c244" : "transparent",
+                  color: isActive ? "#fff" : "#fff",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  marginBottom: "5px",
+                  transition: "all 0.3s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = isActive
+                    ? "#76ac3d" // Slightly darker green on hover
+                    : "#4a5ba5"; // Slightly lighter blue on hover for inactive
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = isActive
+                    ? "#88c244"
+                    : "transparent";
+                }}
+              >
+                {icon} {label}
+              </li>
+            );
+          })}
         </ul>
       </div>
 
