@@ -5,6 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import OutPatient5 from "../MorePages/OutPatient5";
 import PharmacyInventory from "./PharmacyInventory";
 import NewSale from "../MorePages/NewSale";
+import WardRecords from "./WardRecords";
 
 const Pharmacy = () => {
   const [activeTab, setActiveTab] = useState("newsale");
@@ -15,6 +16,8 @@ const Pharmacy = () => {
         return <NewSale />;
       case "patients":
         return <OutPatient5 />;
+      case "inPatients":
+        return <WardRecords />;
       case "inventory":
         return <PharmacyInventory />;
       default:
@@ -64,7 +67,17 @@ const Pharmacy = () => {
               onClick={() => setActiveTab("patients")}
             >
               <FaUserInjured className="me-2" />
-              <span className="d-none d-sm-inline">Patients</span>
+              <span className="d-none d-sm-inline">OutPatients</span>
+            </button>
+            <button
+              type="button"
+              className={`nav-link d-flex align-items-center text-white btn btn-link px-1 ${
+                activeTab === "inPatients" ? "fw-bold" : ""
+              }`}
+              onClick={() => setActiveTab("inPatients")}
+            >
+              <FaUserInjured className="me-2" />
+              <span className="d-none d-sm-inline">InPatients</span>
             </button>
             <button
               type="button"

@@ -4,6 +4,7 @@ import logo from "../assets/logo.jpg";
 import OutPatient4 from "../MorePages/OutPatient4";
 import Appointments from "./Appointments";
 import "bootstrap/dist/css/bootstrap.min.css";
+import WardRecords from "./WardRecords";
 
 const Laboratory = () => {
   const [activeTab, setActiveTab] = useState("assignedPatients");
@@ -42,7 +43,7 @@ const Laboratory = () => {
               onClick={() => setActiveTab("assignedPatients")}
             >
               <FaUserCheck className="me-2" />
-              <span className="d-none d-sm-inline">Assigned Patients</span>
+              <span className="d-none d-sm-inline">Assigned OutPatients</span>
             </button>
 
             <button
@@ -52,7 +53,17 @@ const Laboratory = () => {
               onClick={() => setActiveTab("pastPatients")}
             >
               <FaHistory className="me-2" />
-              <span className="d-none d-sm-inline">Past Patients</span>
+              <span className="d-none d-sm-inline">Past OutPatients</span>
+            </button>
+
+            <button
+              className={`nav-link d-flex align-items-center text-white btn btn-link px-1 ${
+                activeTab === "inPatients" ? "fw-bold" : ""
+              }`}
+              onClick={() => setActiveTab("inPatients")}
+            >
+              <FaHistory className="me-2" />
+              <span className="d-none d-sm-inline">InPatients</span>
             </button>
 
             <button
@@ -104,6 +115,7 @@ const Laboratory = () => {
         {activeTab === "pastPatients" && (
           <OutPatient4 searchTerm={searchTerm} />
         )}
+        {activeTab === "inPatients" && <WardRecords searchTerm={searchTerm} />}
         {activeTab === "appointments" && (
           <Appointments searchTerm={searchTerm} />
         )}
