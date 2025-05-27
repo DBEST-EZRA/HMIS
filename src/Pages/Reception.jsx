@@ -12,7 +12,7 @@ import {
 } from "react-icons/fa";
 import logo from "../assets/logo.jpg";
 import NewPatients from "./PatientDetails";
-import PastPatients from "./PatientDetails";
+import PastPatients from "../MorePages/AllPatients";
 import BirthRecord from "./BirthRecords";
 import Attendance from "./Attendance";
 import Ambulance from "./Ambulance";
