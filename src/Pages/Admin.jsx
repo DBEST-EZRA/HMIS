@@ -45,7 +45,7 @@ const tabComponents = {
 
 const tabsConfig = [
   { key: "employeeDetails", label: "Employee Details", icon: <FaUserTie /> },
-  { key: "patientDetails", label: "Patient Details", icon: <FaUserInjured /> },
+  { key: "patientDetails", label: "OutPatients", icon: <FaUserInjured /> },
   {
     key: "pharmacyInventory",
     label: "Pharmacy Inventory",
@@ -58,7 +58,7 @@ const tabsConfig = [
   },
   { key: "appointments", label: "Appointments", icon: <FaCalendarAlt /> },
   { key: "birthRecords", label: "Birth Records", icon: <FaBaby /> },
-  { key: "wardRecords", label: "Ward Records", icon: <FaHospitalUser /> },
+  { key: "wardRecords", label: "InPatients", icon: <FaHospitalUser /> },
   { key: "departments", label: "Departments", icon: <FaBuilding /> },
   { key: "shifts", label: "Shifts", icon: <FaClock /> },
   { key: "bloodBank", label: "Blood Bank", icon: <FaTint /> },

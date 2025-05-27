@@ -156,7 +156,7 @@ const WardRecords = () => {
       style={{ padding: 20, backgroundColor: "#f5f5f5", minHeight: "100vh" }}
     >
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 style={{ color: "#3C51A1" }}>Ward Records</h2>
+        <h2 style={{ color: "#3C51A1" }}>InPatients</h2>
         <div>
           <button
             onClick={handleExport}

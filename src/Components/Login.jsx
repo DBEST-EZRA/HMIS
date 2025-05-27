@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import logo from "../assets/logo.jpg";
 import { useNavigate } from "react-router-dom";
+import "bootstrap-icons/font/bootstrap-icons.css";
 
 import { auth, db } from "../Configuration/Config";
 import {
@@ -16,6 +17,7 @@ const Login = () => {
   const [role, setRole] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [errorModal, setErrorModal] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
 
@@ -167,15 +169,31 @@ const Login = () => {
             <label htmlFor="password" className="form-label">
               Password
             </label>
-            <input
-              type="password"
-              className="form-control"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter password"
-              required
-            />
+            <div className="input-group">
+              <input
+                type={showPassword ? "text" : "password"}
+                className="form-control"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter password"
+                required
+              />
+              <span
+                className="input-group-text"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  cursor: "pointer",
+                  backgroundColor: "#88c244",
+                  color: "#fff",
+                  border: "none",
+                }}
+              >
+                <i
+                  className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}
+                ></i>
+              </span>
+            </div>
           </div>
 
           <div className="mb-3 text-end">
